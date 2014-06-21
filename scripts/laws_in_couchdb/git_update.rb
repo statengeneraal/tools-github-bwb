@@ -19,7 +19,8 @@ event_builder = GitEventBuilder.new
 if File.exist? INDEX_PATH
   # Read previous index; work from there
   json_str = File.read(INDEX_PATH)
-  event_builder.update(JSON.parse(json_str.force_encoding('utf-8')))
+  document_index = JSON.parse(json_str.force_encoding('utf-8'))
+  event_builder.update(document_index)
 else
   # There was no previous index. Do initial population.
   puts 'Problem loading JSON file. Assuming this is the first run.'

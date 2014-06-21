@@ -12,5 +12,7 @@ xml/
 laws-markdown/
 
 logfile.log
+git_update.log
+couch_update.log
 
 *.orig

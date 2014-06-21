@@ -40,6 +40,8 @@ module Couch
 
     def request(req)
       res = Net::HTTP.start(@host, @port) do |http|
+        http.open_timeout = 5* 60
+        http.read_timeout = 5* 60
         http.request(req)
       end
       unless res.kind_of?(Net::HTTPSuccess)

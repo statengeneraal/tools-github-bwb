@@ -1,5 +1,6 @@
 # require 'sparql/client'
 require 'set'
+require 'zip'
 require 'fileutils'
 require_relative 'git_utils'
 require_relative 'couch'
@@ -15,7 +16,7 @@ class GitEventBuilder
   def initialize
     #Skip xml repo, it's not interesting if we have the couch database
     @maintain_xml_repo = false
-    @logger = Logger.new('logfile.log')
+    @logger = Logger.new('git_update.log')
 
     @events = {}
     @all_laws = {}
@@ -48,16 +49,17 @@ class GitEventBuilder
   def update(previous)
     add_cloudant_events previous
     if @events.length > 0
+      pull_markdown_repo
       puts "About to process #{@events.length} dates"
       @logger.info "About to process #{@events.length} dates"
       process_events
       save_index
       push_markdown_repo
     else
-      puts "Nothing to do."
-      @logger.info "Nothing to do."
+      puts 'Nothing to do.'
+      @logger.info 'Nothing to do.'
     end
-    
+
   end
 
   # Save index.json: a file mapping BWBIDs to paths. This function also the markdown folder: delete paths that don't exist in the index and print an error message if vice versa
@@ -117,7 +119,7 @@ class GitEventBuilder
       end
     end
     pruned = []
-    all_files.each do |bwb_id, doc_path|
+    all_files.each do |_, doc_path|
       if doc_path
         pruned << doc_path
       end
@@ -203,7 +205,7 @@ class GitEventBuilder
     last_index_date = previous_index[GENERATED_ON]
 
     # Add previous index to law list
-    previous_index[LAW_LIST].each do |bwb_id, regeling_info|
+    previous_index[LAW_LIST].each do |_, regeling_info|
       add_to_law_list(regeling_info)
     end
 
@@ -211,7 +213,7 @@ class GitEventBuilder
     rows_modified = Couch::CLOUDANT_CONNECTION.get_rows_for_view('bwb', 'RegelingInfo', 'modifiedAfter', {:startkey => "\"#{last_index_date}-some_string_to_exclude_this_date\""})
     rows_modified.each do |row|
       regeling_info = row['value']
-      bwb_id = regeling_info [JsonConstants::BWB_ID]
+      bwb_id = regeling_info[JsonConstants::BWB_ID]
 
       # Add doc to law list if it contains new info
       add_to_law_list(regeling_info)
@@ -309,6 +311,7 @@ class GitEventBuilder
     begin
       md_folder = "#{MARKDOWN_FOLDER}/#{entry[JsonConstants::PATH]}"
       md_path = "#{md_folder}/README.md"
+      txt_path = "#{md_folder}/README.txt"
       if entry[:_delete]
         # Delete expression:
         # - XML
@@ -316,8 +319,8 @@ class GitEventBuilder
           xml_file = "#{XML_FOLDER}/#{entry[JsonConstants::BWB_ID]}.xml"
           File.delete xml_file if File.exists? xml_file
         end
-        # - Markdown
-        MarkdownUtils::delete_markdown_file(entry, md_folder)
+        # - Markdown / txt
+        MarkdownUtils::delete_file(entry, md_folder)
       else
         bwb_id = entry[BWB_ID]
         # Write new expression
@@ -329,19 +332,24 @@ class GitEventBuilder
         markdown = MarkdownUtils::convert_to_markdown(bwb_id, entry, full_law_list, str_xml)
         entry[:empty] = markdown.length > 0
 
-        # - Markdown
-        MarkdownUtils::write_markdown_file(markdown, md_folder, md_path)
+        # - Markdown / txt
+        MarkdownUtils::write_file(markdown, md_folder, md_path)
+
+        # txt = MarkdownUtils::get_plain_text(entry[BWB_ID], entry[DATE_LAST_MODIFIED], @logger)
+        # if txt
+        #   MarkdownUtils::write_file(txt, md_folder, txt_path)
+        # end
       end
-      rescue => e
-        @logger.error "ERROR while updating #{entry[BWB_ID]}: #{e}"
-        # Try a second time after waiting 1 minute
-        if second_try
-          @logger.error 'Second try also failed. Ignoring entry'
-        else
-          @logger.error '       Retrying after 1 minute'
-          sleep(60)
-          return update_entry(law_list, entry, second_try=true)
-        end
+    rescue => e
+      @logger.error "ERROR while updating #{entry[BWB_ID]}: #{e}"
+      # Try a second time after waiting 1 minute
+      if second_try
+        @logger.error 'Second try also failed. Ignoring entry'
+      else
+        @logger.error '       Retrying after 1 minute'
+        sleep(60)
+        return update_entry(full_law_list, entry, second_try=true)
+      end
     end
   end
 

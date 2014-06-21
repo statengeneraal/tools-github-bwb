@@ -1,8 +1,10 @@
 require 'nokogiri'
+require 'set'
 
 # Adds a descriptive id to the 'about' attribute of every node in an xml document
 class IdAdder
   attr_reader :xml
+  attr_reader :references_bwbs
 
   # Expects a Nokogiri XML doc
   def initialize xml, bwbid
@@ -12,6 +14,7 @@ class IdAdder
     @expressions = []
     @metadata = {}
     @bwbid=bwbid
+    @references_bwbs = Set.new
   end
 
   def add_ids expression_name
@@ -27,7 +30,7 @@ class IdAdder
     end
   end
 
-  def set_hrefs
+  def set_references
     if @xml and @xml.root
       @xml.root.xpath('//extref|//intref').each do |ref|
         str_juriconnect = ref['doc']
@@ -44,6 +47,9 @@ class IdAdder
             ref['href'] = "/bwb/#{bwb_id}"
           end
 
+          if bwb_id #and ref.name == 'extref'
+          @references_bwbs << bwb_id
+          end
           # if ref.name == 'intref'
           #   params={}
           #   if str_params.length > 0

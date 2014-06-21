@@ -3,12 +3,16 @@ module MarkdownUtils
   XSLT_METALEX = Nokogiri::XSLT(File.open('../../xslt/metalex_to_bwb.xslt'))
   XSLT_MARKDOWN = Nokogiri::XSLT(File.open('../../xslt/xml_to_markdown.xslt'))
 
-  # Deletes a markdown file and its empty parent folders
-  def delete_markdown_file(entry, md_folder)
+  # Deletes a markdown/txt file and its empty parent folders
+  def delete_file(entry, md_folder)
     md_path = "#{md_folder}/README.md"
     # puts "deleting #{File.expand_path(md_path)}, exists: #{File.exists?(File.expand_path(md_path))}"
     if File.exists?(File.expand_path(md_path))
       File.delete File.expand_path(md_path)
+    end
+    txt_path = "#{md_folder}/README.txt"
+    if File.exists?(File.expand_path(txt_path))
+      File.delete File.expand_path(txt_path)
     end
 
     folder = File.expand_path(md_folder)
@@ -37,14 +41,32 @@ module MarkdownUtils
     md_folder
   end
 
-  def write_markdown_file(markdown, md_folder, md_path)
-    FileUtils.mkdir_p md_folder unless File.exists?(md_folder) # Make sure that path exists
-    if md_path.length < 25
-      puts md_path
+  def write_file(text, folder, path)
+    FileUtils.mkdir_p folder unless File.exists?(folder) # Make sure that path exists
+    # if path.length < 25
+    #   puts path
+    # end
+    open(path, 'w+') do |f|
+      f.puts text
     end
-    open(md_path, 'w+') do |f|
-      f.puts markdown
+  end
+
+  def get_plain_text(bwbid, date_last_modified, logger=nil)
+    text = nil
+    begin
+      puts "Getting txt for #{bwbid}/#{date_last_modified}"
+      zipped_file = open("http://wetten.overheid.nl/#{bwbid}/geldigheidsdatum_#{date_last_modified}/opslaan_in_ascii", :read_timeout => 20*60)
+      Zip::File.open(zipped_file) do |zip|
+        # Strip first 3 lines which contain '(Tekst geldend op: DD-MM-YYYY)'
+        text = zip.read(zip.first).force_encoding('utf-8').lines.to_a[3..-1].join
+      end
+    rescue
+      if logger
+        logger.error "Could not open #{"http://wetten.overheid.nl/#{bwbid}/geldigheidsdatum_#{date_last_modified}/opslaan_in_ascii"}"
+      end
+      puts "ERROR: Could not open #{"http://wetten.overheid.nl/#{bwbid}/geldigheidsdatum_#{date_last_modified}/opslaan_in_ascii"}"
     end
+    text
   end
 
   # Convert the given entry XML to markdown, for the given BWB law list.

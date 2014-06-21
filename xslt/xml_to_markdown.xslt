@@ -7,8 +7,8 @@
 	<xsl:template match="/wetgeving">
 		<xsl:apply-templates select="node()"/>
 	</xsl:template>
-	<xsl:template match="meta-data|historische-brondata"/>
 	<!-- Don't render metadata -->
+	<xsl:template match="meta-data|historische-brondata"/>
 	<!-- Pass through if we don't know what to do-->
 	<xsl:template match="*">
 		<xsl:apply-templates select="node()"/>
@@ -393,12 +393,12 @@ If RowSep has the value 1 (true), then a rule will be drawn below all the rows i
 |</xsl:text>
 		<xsl:for-each select="thead/row/entry">
 			<xsl:if test="$group-align = 'left' or $group-align = 'center'">
-				<!-- TODO check if overriden by column attribute -->
+				<!-- TODO check if overridden by column attribute -->
 				<xsl:text>:</xsl:text>
 			</xsl:if>
 			<xsl:text>---</xsl:text>
 			<xsl:if test="$group-align = 'right' or $group-align = 'center'">
-				<!-- TODO check if overriden by column attribute -->
+				<!-- TODO check if overridden by column attribute -->
 				<xsl:text>:</xsl:text>
 			</xsl:if>
 			<xsl:text>|</xsl:text>

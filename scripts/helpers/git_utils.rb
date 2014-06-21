@@ -328,6 +328,11 @@ module GitUtils
 
     Dir.chdir('..')
   end
+  def pull_markdown_repo
+    Dir.chdir(MARKDOWN_FOLDER)
+    system('git pull')
+    Dir.chdir('..')
+  end
   def push_markdown_repo
     Dir.chdir(MARKDOWN_FOLDER)
     system('git push')
