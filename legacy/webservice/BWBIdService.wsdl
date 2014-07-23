@@ -1,0 +1,357 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions 
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" 
+  xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" 
+  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" 
+  xmlns="http://schemas.xmlsoap.org/wsdl/" 
+  xmlns:bwbns="http://schemas.overheid.nl/bwbidservice/types" 
+  targetNamespace="http://schemas.overheid.nl/bwbidservice" 
+  xmlns:bwbsvc="http://schemas.overheid.nl/bwbidservice"  
+  name="BWBIdService">
+
+  <wsdl:types>
+    <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+                targetNamespace="http://schemas.overheid.nl/bwbidservice/types">
+
+      <xsd:simpleType name="NietOfficieleTitel">
+        <xsd:restriction base="xsd:string" />
+      </xsd:simpleType>
+
+      <xsd:complexType name="NietOfficieleTitelLijst">
+        <xsd:complexContent>
+          <xsd:restriction base="soapenc:Array">
+             <xsd:attribute ref="soapenc:arrayType" wsdl:arrayType="bwbns:NietOfficieleTitel[]"/>
+           </xsd:restriction>
+         </xsd:complexContent>
+      </xsd:complexType>
+
+      <xsd:simpleType name="Afkorting">
+        <xsd:restriction base="xsd:string" />
+      </xsd:simpleType>
+
+      <xsd:complexType name="AfkortingLijst">
+        <xsd:complexContent>
+          <xsd:restriction base="soapenc:Array">
+             <xsd:attribute ref="soapenc:arrayType" wsdl:arrayType="bwbns:Afkorting[]"/>
+           </xsd:restriction>
+         </xsd:complexContent>
+      </xsd:complexType>
+
+      <xsd:complexType name="Citeertitel">
+        <xsd:all>
+          <xsd:element name="titel" type="xsd:string"  />
+          <xsd:element name="status" type="xsd:string" />
+          <xsd:element name="InwerkingtredingsDatum" type="xsd:date"/>
+        </xsd:all>
+      </xsd:complexType>
+
+      <xsd:complexType name="CiteertitelLijst">
+        <xsd:complexContent>
+          <xsd:restriction base="soapenc:Array">
+             <xsd:attribute ref="soapenc:arrayType" wsdl:arrayType="bwbns:Citeertitel[]"/>
+           </xsd:restriction>
+         </xsd:complexContent>
+      </xsd:complexType>
+      
+      <xsd:simpleType name="BWBwtiServiceDatumType">
+         <xsd:restriction base="xsd:string">
+           <xsd:enumeration value="publicatieDatum"/>
+           <xsd:enumeration value="inwerkingtredingsDatum"/>
+         </xsd:restriction>
+      </xsd:simpleType>
+
+      <xsd:complexType name="WijzigingInfo">
+        <xsd:all>
+          <xsd:element name="Betreft" type="xsd:string" maxOccurs="1"/>
+          <xsd:element name="WijzigingsInwerkingtredingsDatum" type="xsd:date" maxOccurs="1"/>
+          <xsd:element name="TerugwerkendeKrachtDatum" type="xsd:date" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="TerugwerkendeKrachtScope" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="OntstaansBronDatum" type="xsd:date" maxOccurs="1"/>
+          <xsd:element name="OntstaansBronPublicatie" type="xsd:string" maxOccurs="1"/>
+          <xsd:element name="OntstaansBronPublicatieDatum" type="xsd:date" maxOccurs="1"/>
+          <xsd:element name="InwerkingtredingsDatum" type="xsd:date" maxOccurs="1"/>
+          <xsd:element name="InwerkingtredingsPublicatie" type="xsd:string" maxOccurs="1"/>
+          <xsd:element name="InwerkingtredingsPublicatieDatum" type="xsd:date" maxOccurs="1"/>
+          <xsd:element name="InwerkingtredingsRectificatie" type="xsd:string" maxOccurs="1"/>
+        </xsd:all>
+      </xsd:complexType>
+
+      <xsd:complexType name="WijzigingInfoLijst">
+        <xsd:complexContent>
+          <xsd:restriction base="soapenc:Array">
+             <xsd:attribute ref="soapenc:arrayType" wsdl:arrayType="bwbns:WijzigingInfo[]"/>
+          </xsd:restriction>
+        </xsd:complexContent>
+      </xsd:complexType>
+
+      <xsd:complexType name="ElementInfo">
+        <xsd:all>
+          <xsd:element name="Label" type="xsd:string" maxOccurs="1"/>
+          <xsd:element name="WijzigingInfoLijst" type="bwbns:WijzigingInfoLijst" maxOccurs="1"/>
+        </xsd:all>
+      </xsd:complexType>
+
+      <xsd:complexType name="ElementInfoLijst">
+        <xsd:complexContent>
+          <xsd:restriction base="soapenc:Array">
+             <xsd:attribute ref="soapenc:arrayType" wsdl:arrayType="bwbns:ElementInfo[]"/>
+          </xsd:restriction>
+        </xsd:complexContent>
+      </xsd:complexType>
+
+      <xsd:complexType name="RegelingInfo">
+        <xsd:all>
+          <xsd:element name="BWBId" type="xsd:string" maxOccurs="1"/>
+          <xsd:element name="DatumLaatsteWijziging" type="xsd:date" maxOccurs="1"/>
+          <xsd:element name="VervalDatum" type="xsd:date" maxOccurs="1"/>
+          <xsd:element name="OfficieleTitel" type="xsd:string" maxOccurs="1"/>
+          <xsd:element name="CiteertitelLijst" type="bwbns:CiteertitelLijst" maxOccurs="1"/>
+          <xsd:element name="AfkortingLijst" type="bwbns:AfkortingLijst" maxOccurs="1"/>
+          <xsd:element name="NietOfficieleTitelLijst" type="bwbns:NietOfficieleTitelLijst" maxOccurs="1"/>
+          <xsd:element name="RegelingSoort" type="xsd:string" maxOccurs="1"/>
+          <xsd:element name="EersteMinisterie" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="InwerkingtredingsDatum" type="xsd:date" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="ElementInfoLijst" type="bwbns:ElementInfoLijst" minOccurs="0" maxOccurs="1"/>        
+        </xsd:all>
+      </xsd:complexType>
+
+      <xsd:complexType name="TerugwerkendeKrachtInfo">
+        <xsd:sequence>
+          <xsd:element name="TerugwerkendeKrachtDatum" type="xsd:date" maxOccurs="1"/>
+          <xsd:element name="TerugwerkendeKrachtScope" type="xsd:string" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <xsd:complexType name="TerugwerkendeKrachtLijst">
+        <xsd:complexContent>
+          <xsd:restriction base="soapenc:Array">
+             <xsd:attribute ref="soapenc:arrayType" wsdl:arrayType="bwbns:TerugwerkendeKrachtInfo[]"/>
+          </xsd:restriction>
+        </xsd:complexContent>
+      </xsd:complexType>
+
+      <xsd:complexType name="InwerkingtredingsDatumInfo">
+        <xsd:sequence>
+          <xsd:element name="InwerkingtredingsDatum" type="xsd:date" maxOccurs="1"/>
+          <xsd:element name="TerugwerkendeKrachtLijst" type="bwbns:TerugwerkendeKrachtLijst" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <xsd:complexType name="InwerkingtredingsDatumLijst">
+        <xsd:complexContent>
+          <xsd:restriction base="soapenc:Array">
+             <xsd:attribute ref="soapenc:arrayType" wsdl:arrayType="bwbns:InwerkingtredingsDatumInfo[]"/>
+          </xsd:restriction>
+        </xsd:complexContent>
+      </xsd:complexType>
+
+      <xsd:complexType name="InwerkingtredingsInfo">
+        <xsd:all>
+          <xsd:element name="OpIdInwerkingtreding" type="xsd:string" maxOccurs="1"/>
+          <xsd:element name="InwerkingtredingsDatumLijst" type="bwbns:InwerkingtredingsDatumLijst" maxOccurs="1"/>
+        </xsd:all>
+      </xsd:complexType>
+      
+      <xsd:complexType name="DatumInfo">
+        <xsd:all>
+          <xsd:element name="Datum" type="xsd:date" maxOccurs="1"/>
+          <xsd:element name="Publicatie" type="xsd:string" maxOccurs="1"/>
+          <xsd:element name="RegelingInfoLijst" type="bwbns:RegelingInfoLijst" maxOccurs="1"/>
+        </xsd:all>
+      </xsd:complexType>
+      
+      <xsd:complexType name="OntstaansbronInfo">
+        <xsd:all>
+          <xsd:element name="OpIdOntstaansbron" type="xsd:string" maxOccurs="1"/>
+          <xsd:element name="PublicatiedatumOntstaansbron" type="xsd:date" maxOccurs="1"/>
+          <xsd:element name="RegelingSoort" type="xsd:string" maxOccurs="1"/>
+          <xsd:element name="EersteMinisterie" type="xsd:string" maxOccurs="1"/>
+          <xsd:element name="InwerkingtredingsLijst" type="bwbns:InwerkingtredingsLijst" maxOccurs="1"/>
+        </xsd:all>
+      </xsd:complexType>
+
+      <xsd:complexType name="RegelingInfoLijst">
+        <xsd:complexContent>
+          <xsd:restriction base="soapenc:Array">
+             <xsd:attribute ref="soapenc:arrayType" wsdl:arrayType="bwbns:RegelingInfo[]"/>
+          </xsd:restriction>
+        </xsd:complexContent>
+      </xsd:complexType>
+
+      <xsd:complexType name="InwerkingtredingsLijst">
+        <xsd:complexContent>
+          <xsd:restriction base="soapenc:Array">
+             <xsd:attribute ref="soapenc:arrayType" wsdl:arrayType="bwbns:InwerkingtredingsInfo[]"/>
+          </xsd:restriction>
+        </xsd:complexContent>
+      </xsd:complexType>
+
+      <xsd:complexType name="OntstaansbronLijst">
+        <xsd:complexContent>
+          <xsd:restriction base="soapenc:Array">
+             <xsd:attribute ref="soapenc:arrayType" wsdl:arrayType="bwbns:OntstaansbronInfo[]"/>
+          </xsd:restriction>
+        </xsd:complexContent>
+      </xsd:complexType>
+
+      <xsd:complexType name="BWBIdServiceResultaat">
+       <xsd:all>
+        <xsd:element name="RegelingInfoLijst" type="bwbns:RegelingInfoLijst" maxOccurs="1"/>
+        <xsd:element name="GegenereerdOp" type="xsd:date" maxOccurs="1"/>
+       </xsd:all>
+      </xsd:complexType>
+
+      <xsd:complexType name="BWBippServiceResultaat">
+       <xsd:all>
+        <xsd:element name="GegenereerdOp" type="xsd:date" maxOccurs="1"/>
+        <xsd:element name="OntstaansbronLijst" type="bwbns:OntstaansbronLijst" maxOccurs="1"/>
+       </xsd:all>
+      </xsd:complexType>
+              
+      <xsd:complexType name="RegelingMinisterieLijst">
+        <xsd:sequence>
+        	<xsd:element name="ministerie" type="xsd:string" maxOccurs="unbounded" />
+        </xsd:sequence>
+      </xsd:complexType>
+              
+      <xsd:complexType name="SoortRegelingLijst">
+        <xsd:sequence>
+        	<xsd:element name="soortRegeling" type="xsd:string" maxOccurs="unbounded" />
+        </xsd:sequence>
+      </xsd:complexType>
+
+    </xsd:schema>
+    
+    </wsdl:types>
+
+  <message name="SearchByBWBIdRequest">
+    <part name="bwbid" type="xsd:string" />
+  </message>
+
+  <message name="SearchByTitleRequest">
+    <part name="titel" type="xsd:string" />
+    <part name="datumGeldig" type="xsd:date" />
+    <part name="volledigeTitel" type="xsd:boolean" />
+  </message>
+
+  <message name="SearchModifiedSinceRequest">
+    <part name="datumGewijzigd" type="xsd:dateTime" xsd:minOccurs="0"/>
+  </message>
+
+  <message name="Response">
+    <part name="return" type="bwbns:BWBIdServiceResultaat" />
+  </message>
+
+  <message name="BWBwtiServiceRequest">
+  	<part name="datumVanaf" type="xsd:dateTime" />
+  	<part name="datumTotMet" type="xsd:dateTime" />
+  	<part name="datumType" type="bwbns:BWBwtiServiceDatumType" />
+  	<part name="soortRegelingLijst" type="bwbns:SoortRegelingLijst" />
+    <part name="regelingMinisterieLijst" type="bwbns:RegelingMinisterieLijst" xsd:minOccurs="0" />
+    <part name="gegroepeerd" type="xsd:boolean" xsd:minOccurs="0" />
+  </message>
+
+  <message name="BWBippServiceRequest">
+  	<part name="datumVanaf" type="xsd:dateTime" />
+  	<part name="datumTotMet" type="xsd:dateTime" />
+  	<part name="datumType" type="bwbns:BWBwtiServiceDatumType" />
+  	<part name="soortRegelingLijst" type="bwbns:SoortRegelingLijst" />
+    <part name="regelingMinisterieLijst" type="bwbns:RegelingMinisterieLijst" xsd:minOccurs="0" />
+  </message>
+  
+  <message name="BWBwtiServiceResponse">
+  	<part name="return" type="bwbns:BWBIdServiceResultaat" />
+  </message>
+  
+  <message name="BWBippServiceResponse">
+  	<part name="return" type="bwbns:BWBippServiceResultaat" />
+  </message>
+  
+  <portType name="BWBIdServicePort">
+    <operation name="searchByBWBId">
+      <input message="bwbsvc:SearchByBWBIdRequest" />
+      <output message="bwbsvc:Response" />
+    </operation>
+    <operation name="searchByTitle">
+      <input message="bwbsvc:SearchByTitleRequest" />
+      <output message="bwbsvc:Response" />
+    </operation>
+    <operation name="searchModifiedSince">
+      <input message="bwbsvc:SearchModifiedSinceRequest" />
+      <output message="bwbsvc:Response" />
+    </operation>    <operation name="BWBwtiService">    	<input message="bwbsvc:BWBwtiServiceRequest" />    	<output message="bwbsvc:BWBwtiServiceResponse" />
+    </operation>
+    <operation name="BWBippService">
+    	<input message="bwbsvc:BWBippServiceRequest" />
+    	<output message="bwbsvc:BWBippServiceResponse" />
+    </operation>
+  </portType>
+
+  <binding name="BWBIdServiceBinding"  type="bwbsvc:BWBIdServicePort">
+    <soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http" />
+    <operation name="searchByBWBId">
+      <soap:operation soapAction="http://schemas.overheid.nl/bwbidservice#searchByBWBId"/>
+      <input>
+        <soap:body use="encoded" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+            namespace="http://schemas.overheid.nl/bwbidservice" />
+      </input>
+      <output>
+        <soap:body use="encoded" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+            namespace="http://schemas.overheid.nl/bwbidservice" />
+      </output>
+    </operation>
+    <operation name="searchByTitle">
+      <soap:operation soapAction="http://schemas.overheid.nl/bwbidservice#searchByTitle"/>
+      <input>
+        <soap:body use="encoded" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+            namespace="http://schemas.overheid.nl/bwbidservice" />
+      </input>
+      <output>
+        <soap:body use="encoded" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+            namespace="http://schemas.overheid.nl/bwbidservice" />
+      </output>
+    </operation>
+    <operation name="searchModifiedSince">
+      <soap:operation soapAction="http://schemas.overheid.nl/bwbidservice#searchModifiedSince"/>
+      <input>
+        <soap:body use="encoded" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+            namespace="http://schemas.overheid.nl/bwbidservice" />
+      </input>
+      <output>
+        <soap:body use="encoded" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+            namespace="http://schemas.overheid.nl/bwbidservice" />
+      </output>
+    </operation>
+    <operation name="BWBwtiService">
+      <soap:operation soapAction="http://schemas.overheid.nl/bwbidservice#BWBwtiService"/>
+      <input>
+        <soap:body use="encoded" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+            namespace="http://schemas.overheid.nl/bwbidservice" />
+      </input>
+      <output>
+        <soap:body use="encoded" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+            namespace="http://schemas.overheid.nl/bwbidservice" />
+      </output>
+    </operation>
+    <operation name="BWBippService">
+      <soap:operation soapAction="http://schemas.overheid.nl/bwbidservice#BWBippService"/>
+      <input>
+        <soap:body use="encoded" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+            namespace="http://schemas.overheid.nl/bwbidservice" />
+      </input>
+      <output>
+        <soap:body use="encoded" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+            namespace="http://schemas.overheid.nl/bwbidservice" />
+      </output>
+    </operation>
+  </binding>
+
+  <service name="BWBIdService">
+    <port name="BWBIdServicePort" binding="bwbsvc:BWBIdServiceBinding">
+      <soap:address location="http://wetten.overheid.nl/rpc" />
+    </port>
+
+  </service>
+
+</wsdl:definitions>

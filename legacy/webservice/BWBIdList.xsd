@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE xsd>
+    <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+                targetNamespace="http://schemas.overheid.nl/bwbidservice"
+                xmlns:bwbns="http://schemas.overheid.nl/bwbidservice"
+                elementFormDefault="qualified">
+
+    <xsd:complexType name="CiteertitelType">
+        <xsd:all>
+            <xsd:element name="Titel" type="xsd:string"  />
+            <xsd:element name="Status" type="xsd:string" />
+            <xsd:element name="InwerkingtredingsDatum" type="xsd:date" minOccurs="0"/>
+        </xsd:all>
+    </xsd:complexType>
+
+    <xsd:complexType name="CiteertitelLijstType">
+        <xsd:sequence>
+            <xsd:element name="Citeertitel" maxOccurs="unbounded" type="bwbns:CiteertitelType"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="AfkortingLijstType">
+        <xsd:sequence>
+            <xsd:element name="Afkorting" minOccurs="0" maxOccurs="unbounded" type="xsd:string"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="NietOfficieleTitelLijstType">
+        <xsd:sequence>
+            <xsd:element name="NietOfficieleTitel"  
+                minOccurs="0" 
+                maxOccurs="unbounded" 
+                type="xsd:string"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="RegelingInfoType">
+        <xsd:all>
+            <xsd:element name="BWBId" type="xsd:string" maxOccurs="1"/>
+            <xsd:element name="DatumLaatsteWijziging" type="xsd:date" maxOccurs="1"/>
+            <xsd:element name="VervalDatum" type="xsd:date" minOccurs="0" />
+            <xsd:element name="OfficieleTitel" type="xsd:string" maxOccurs="1"/>
+            <xsd:element name="CiteertitelLijst"  
+                maxOccurs="1" 
+                type="bwbns:CiteertitelLijstType"/>
+            <xsd:element name="AfkortingLijst" 
+                maxOccurs="1"
+                type="bwbns:AfkortingLijstType"/>
+            <xsd:element name="NietOfficieleTitelLijst" 
+                maxOccurs="1"
+                type="bwbns:NietOfficieleTitelLijstType"/>
+            <xsd:element name="RegelingSoort" type="xsd:string" maxOccurs="1"/>
+        </xsd:all>
+      </xsd:complexType>
+
+    <xsd:complexType name="RegelingInfoLijstType">
+        <xsd:complexContent>
+            <xsd:element name="RegelingInfo" 
+                type="bwbns:RegelingInfoType" 
+                maxOccurs="unbounded" />
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:element name="BWBIdServiceResultaat" >
+        <xsd:complexType>
+            <xsd:all>
+                <xsd:element name="RegelingInfoLijst" 
+                    type="bwbns:RegelingInfoLijstType" 
+                    maxOccurs="1"/>
+                <xsd:element name="GegenereerdOp" type="xsd:date" maxOccurs="1"/>
+            </xsd:all>
+        </xsd:complexType>
+    </xsd:element>
+    
+</xsd:schema>
