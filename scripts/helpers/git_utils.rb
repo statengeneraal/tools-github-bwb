@@ -34,10 +34,9 @@ module GitUtils
     if File.exist? cache_path
       str_xml = File.open(cache_path).read
     else
-      str_json = open("http://#{Secret::CLOUDANT_NAME}.cloudant.com/bwb/#{bwb_id}%2F#{entry[DATE_LAST_MODIFIED]}").read
-      regeling_info = JSON.parse str_json.force_encoding('utf-8')
-      str_xml = regeling_info['xml']
+      str_xml = open("http://#{Secret::CLOUDANT_NAME}.cloudant.com/bwb/#{bwb_id}%2F#{entry[DATE_LAST_MODIFIED]}/data.xml").read.force_encoding('utf-8')
 
+      #Write to cache
       File.open(cache_path, "w+") do |f|
         f.puts str_xml
       end

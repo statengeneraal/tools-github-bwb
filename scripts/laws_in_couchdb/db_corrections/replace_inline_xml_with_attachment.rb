@@ -23,15 +23,15 @@ def update_keys keys
       }
       doc['xml'] = nil
     end
-    docs << doc
+    updated_docs << doc
   end
+  # puts keys
   Couch::CLOUDANT_CONNECTION.bulk_write_to_bwb_database(updated_docs)
   puts "updated #{keys.length} docs"
 end
 
 #Start script:
-
-rows = Couch::CLOUDANT_CONNECTION.get_rows_for_view('bwb', 'RegelingInfo', 'hasInlineXml')
+rows = Couch::CLOUDANT_CONNECTION.get_rows_for_view('bwb', 'RegelingInfo', 'hasInlineXml')#, {:limit => 3})
 puts "Found #{rows.length} documents with inlined XML"
 
 batch = []

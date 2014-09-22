@@ -152,9 +152,9 @@ module UpdateCouchHelper
           doc['couchDbModificationDate'] = today
           doc['addedToCouchDb'] = today
           doc['_attachments'] = {
-              'data.xml' =>{
-                      'content_type' => 'application/xml',
-                      'data' => Base64.encode64(xml)
+              'data.xml' => {
+                  'content_type' => 'application/xml',
+                  'data' => Base64.encode64(xml)
               }
           }
           bulk << doc

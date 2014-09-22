@@ -37,12 +37,18 @@ module BwbCouchHelper
     return new_expressions, metadata_changed, disappeared
   end
 
+  #TODO remove this method
   def bulk_write_to_bwb_database(docs, max_post_size=15)
     bytesize = 0
     bulk=[]
     docs.each do |doc|
       bulk<<doc
       bytesize += doc['xml'].bytesize if doc['xml']
+      if doc['_attachments']
+        doc['_attachments'].each do |_, val|
+          bytesize += val['data'].bytesize
+        end
+      end
       if bytesize >= max_post_size*1024*1024 # Flush every n MB
         flush(bulk)
         bulk.clear
@@ -152,8 +158,14 @@ module BwbCouchHelper
         end
       end
 
+  #TODO use proper bulk upload helper method
       bulk << doc
       bytesize += doc['xml'].bytesize
+      if doc['_attachments']
+        doc['_attachments'].each do |_, val|
+          bytesize += val['data'].bytesize
+        end
+      end
       puts "#{doc['_id']} (Y)"
       if bytesize >= 70*1024*1024 or bulk.length >= 50 #Flush after 70MB or 50 items
         bulk_write_to_bwb_database(bulk)

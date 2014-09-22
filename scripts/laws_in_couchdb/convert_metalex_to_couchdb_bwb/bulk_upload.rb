@@ -1,6 +1,7 @@
 # Script to upload all files in '/converted' folder to CochDB
 
 require 'json'
+require 'base64'
 require 'open-uri'
 require 'net/http'
 require_relative 'secret'
@@ -8,6 +9,7 @@ require_relative 'secret'
 CLOUDANT_URI = URI.parse("http://#{Secret::CLOUDANT_NAME}.cloudant.com")
 
 # Flushes the given JSON objects to Cloudant
+# noinspection RubyStringKeysInHashInspection
 def flush non_metalex, files
   docs = []
   files.each do |path|
@@ -23,9 +25,12 @@ def flush non_metalex, files
       # Add XML string
       str_xml = File.open("converted/#{doc['bwbId']}%2F#{doc['datumLaatsteWijziging']}.xml").read.force_encoding('utf-8').strip
       if str_xml.length > 0
-        doc['xml'] = str_xml
-      else
-        doc['xml'] = nil
+        doc['_attachments'] = {
+            'data.xml' =>{
+                'content_type' => 'application/xml',
+                'data' => Base64.encode64(str_xml)
+            }
+        }
       end
       docs << doc
     end

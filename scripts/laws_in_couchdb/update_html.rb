@@ -96,9 +96,8 @@ def get_display_kind(doc)
 end
 
 # noinspection RubyStringKeysInHashInspection
-def make_xml_doc_html(doc, old_rev)
+def make_xml_doc_html(doc, xml, old_rev)
   bwbid=doc['bwbId']
-  xml = Nokogiri::XML doc['xml']
 
   id_adder = IdAdder.new xml, bwbid
   id_adder.add_ids '' #"#{bwbid}/#{doc['datumLaatsteWijziging']}"
@@ -177,7 +176,7 @@ def make_xml_doc_html(doc, old_rev)
   doc
 end
 
-def update_html keys
+def update_html(keys)
   batch_size = 150
 
   batches = []
@@ -213,8 +212,9 @@ def update_html keys
     # Update existing docs
     new_docs.each do |old_doc|
       if xml_map[old_doc['bwbId']]
+        str_xml = Nokogiri::XML(Couch::CLOUDANT_CONNECTION.get_attachment_str('bwb', old_doc['_id'], 'data.xml'))
         doc = xml_map[old_doc['bwbId']]
-        doc = make_xml_doc_html(doc, old_doc['_rev'])
+        doc = make_xml_doc_html(doc, str_xml, old_doc['_rev'])
         xml_map[doc['bwbId']] = nil
         write_docs << doc
       else
@@ -225,7 +225,8 @@ def update_html keys
     xml_map.each do |bwbid, doc|
       unless doc == nil
         puts "New doc: #{bwbid}"
-        doc = make_xml_doc_html(doc, nil)
+        xml = Nokogiri::XML(Couch::CLOUDANT_CONNECTION.get_attachment_str('bwb', old_doc['_id'], 'data.xml'))
+        doc = make_xml_doc_html(doc, xml, nil)
         write_docs << doc
       end
     end

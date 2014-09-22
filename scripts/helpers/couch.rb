@@ -109,6 +109,10 @@ module Couch
       JSON.parse(res.body)
     end
 
+    def get_attachment_str(db, id, attachment)
+      get("/#{db}/#{CGI.escape(id)}/#{attachment}").body
+    end
+
     private
     def handle_error(req, res)
       e = RuntimeError.new("#{res.code}:#{res.message}\nMETHOD:#{req.method}\nURI:#{req.path}\n#{res.body}")

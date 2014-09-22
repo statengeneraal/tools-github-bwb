@@ -8,9 +8,9 @@ While the Dutch government publishes Dutch laws through their own BWB service, s
 
 * The service is very slow
 * Only one version of a law (the current) is available; there are no historical consolidations available
-* Bulk requests are not possible
+* Bulk requests are awkward
 
-While the [MetaLex Document Server](http://doc.metalex.eu/) solves the first two of these problems, it also introduces (more subtle) problems and bugs. If we want to re-do the MetaLex Document Server, it is good to have a copy of the source document around. 
+While the [MetaLex Document Server](http://doc.metalex.eu/) solves the first two of these problems, and arguably the third, it also introduces (more subtle) problems and bugs. If we want to re-do the MetaLex Document Server, it is good to have a copy of the source document around. 
 
 Usage
 -----
@@ -30,6 +30,8 @@ This will show full documents, but we may be interested in just the metadata. I 
 
 Some technical notes
 --------------------
-Documents are stored as CouchDB JSON-files with metadata fields that are not *exactly* the same as the XML elements. Compare `XmlConstants.rb` with `JsonConstants.rb`. Also, a field called "xml" is added to the documents, which contains the document content, unsurprisingly in XML format. Document IDs are of the form `{BWBID}/{EXPRESSION DATE}`, which encodes to `{BWBID}%2F{EXPRESSION DATE}`, where the expression date is specified by the field `datumLaatsteWijzing` (date last modified).
+Documents are stored as CouchDB JSON-files with metadata fields that are not *exactly* the same as the XML elements. Compare `XmlConstants.rb` with `JsonConstants.rb`. An attachment called `data.xml` contains the document content, unsurprisingly in XML format. Document IDs are of the form `{BWBID}/{EXPRESSION DATE}`, which encodes to `{BWBID}%2F{EXPRESSION DATE}`, where the expression date is specified by the field `datumLaatsteWijzing` (date last modified).
 
-The updater service is run as a single-dyno Heroku deployment with European locality. The Heroku platform was chosen because it is reliable, easy to deploy on and free to use in this case. 
+Note that a field called "xml" has been added to the documents, which should always be `null`. This is a remnant of early iterations of the database in which document content was inlined along with the metadata. The reasoning was that bulk requests are easier this way. However, metadata does not get compressed, as attachments do. Also inlining XML made it harder to query documents just for their metadata, needing secondary queries.
+
+The updater service is run as a single-dyno Heroku deployment with European locality. The Heroku platform was chosen because it is reliable, easy to deploy on and free to use in this case.

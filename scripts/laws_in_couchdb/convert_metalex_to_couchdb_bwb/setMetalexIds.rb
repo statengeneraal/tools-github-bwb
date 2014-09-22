@@ -4,7 +4,7 @@
 require 'open-uri'
 require 'json'
 require 'sparql/client'
-require_relative 'couch_helper'
+require_relative '../../helpers/bwb_couch_helper'
 require_relative 'secret'
 include CouchHelper
 
@@ -47,24 +47,7 @@ def set_metalex_id(docs)
       end
     end
   end
-
-  if changed.length>0
-    puts "Updating #{changed.length} docs"
-    bytesize = 0
-    bulk = []
-    changed.each do |doc|
-      bulk << doc
-      bytesize += doc['xml'].bytesize
-      if bytesize >= 5*1024*1024 #5MB
-        flush(bulk)
-        bulk=[]
-        bytesize=0
-      end
-    end
-    if bulk.length>0
-      flush(bulk)
-    end
-  end
+  bulk_write_to_bwb_database(changed)
 end
 
 def query_for_ids(q)
