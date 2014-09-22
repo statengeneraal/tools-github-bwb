@@ -56,7 +56,7 @@ module BwbCouchHelper
 
   # Get metadata of documents currently in CouchDB, along with a mapping of BWBIDs to paths and a list of docs that have its path field set wrongly
   def get_cloudant_entries
-    rows_cloudant = Couch::CLOUDANT_CONNECTION.get_rows_for_view('bwb', 'RegelingInfo', 'all')#all_non_metalex
+    rows_cloudant = Couch::CLOUDANT_CONNECTION.get_rows_for_view('bwb', 'RegelingInfo', 'all') #all_non_metalex
     puts "Found #{rows_cloudant.length} expressions in our own database"
 
     paths = {}
@@ -81,19 +81,31 @@ module BwbCouchHelper
   end
 
   # Download XML of given documents and upload the expressions to CouchDB
-  def process_changes expressions, metadata_changed
-    today = Date.today.strftime("%Y-%m-%d")
+  def process_changes(expressions, metadata_changed)
+    today = Date.today.strftime('%Y-%m-%d')
     bytesize = 0
     bulk = []
+
+    i=0
     expressions.each do |doc|
-      xml = open("http://wetten.overheid.nl/xml.php?regelingID=#{doc[JsonConstants::BWB_ID]}", :read_timeout => 20*60).read
-      doc['_id'] = "#{doc[JsonConstants::BWB_ID]}/#{doc[JsonConstants::DATE_LAST_MODIFIED]}"
-      doc['couchDbModificationDate'] = today
-      doc[JsonConstants::XML] = xml
-      bulk << doc
-      bytesize += xml.bytesize
-      puts "#{doc['_id']} (Y)"
-      if bytesize >= 70*1024*1024 #Flush after 70MB
+      url = "http://wetten.overheid.nl/xml.php?regelingID=#{doc[JsonConstants::BWB_ID]}"
+      begin
+        xml = open(url, :read_timeout => 60*60).read
+        doc['_id'] = "#{doc[JsonConstants::BWB_ID]}/#{doc[JsonConstants::DATE_LAST_MODIFIED]}"
+        doc['couchDbModificationDate'] = today
+        doc[JsonConstants::XML] = xml
+        bulk << doc
+        bytesize += xml.bytesize
+        # puts "#{doc['_id']} (Y)"
+        i+=1
+        if i > 0 and i % 10 == 0
+          puts "Downloaded #{i} new expressions."
+        end
+      rescue
+        puts "Could not download #{url}"
+      end
+
+      if bytesize >= 70*1024*1024 or bulk.size >= 5 #Flush after 70MB or 20 items
         bulk_write_to_bwb_database(bulk)
         # puts "Flush #{bulk.size}"
         bulk.clear
@@ -103,12 +115,17 @@ module BwbCouchHelper
 
     # Set metadata
     keyz=[]
+    i=0
     metadata_changed.each do |id, diff|
       keyz << id
 
       if keyz.length >= 50
         set_new_metadata(bulk, bytesize, metadata_changed, keyz, today)
         keyz.clear
+      end
+      i+=1
+      if i > 0 and i % 10 == 0
+        puts "Changed metadata of #{i} docs."
       end
     end
     if keyz.length > 0
@@ -120,7 +137,7 @@ module BwbCouchHelper
       bulk_write_to_bwb_database(bulk)
     end
 
-    puts "Done."
+    puts 'Done.'
   end
 
   def set_new_metadata(bulk, bytesize, metadata, keyz, today)
@@ -138,7 +155,7 @@ module BwbCouchHelper
       bulk << doc
       bytesize += doc['xml'].bytesize
       puts "#{doc['_id']} (Y)"
-      if bytesize >= 70*1024*1024 #Flush after 70MB
+      if bytesize >= 70*1024*1024 or bulk.length >= 50 #Flush after 70MB or 50 items
         bulk_write_to_bwb_database(bulk)
         # puts "Flush #{bulk.size}"
         bulk.clear
@@ -150,8 +167,8 @@ module BwbCouchHelper
   # Flushes the given hashes to CouchDB
   def flush(docs)
     body = {:docs => docs}.to_json
-    request = Net::HTTP::Post.new("/bwb/_bulk_docs")
-    request["Content-Type"] = "application/json;charset=utf-8"
+    request = Net::HTTP::Post.new('/bwb/_bulk_docs')
+    request['Content-Type'] = 'application/json;charset=utf-8'
     # noinspection RubyStringKeysInHashInspection
     request.basic_auth(Secret::CLOUDANT_NAME, Secret::CLOUDANT_PASSWORD)
     request.body = body
@@ -165,7 +182,7 @@ module BwbCouchHelper
         puts body
         puts response.code
         puts response.body
-        raise "Error posting documents"
+        raise 'Error posting documents'
     end
   end
 
@@ -227,7 +244,25 @@ module BwbCouchHelper
       same = true
     else
       if metadata1.is_a? Array # Order doesn't matter
-        same = (metadata1.uniq.sort == metadata2.uniq.sort)
+        m1 = metadata1.uniq
+        m1 = m1.sort_by do |array_item|
+          if array_item.is_a? Comparable
+            array_item
+          else
+            array_item.hash
+          end
+        end
+
+        m2 = metadata2.uniq
+        m2 = m2.sort_by do |array_item|
+          if array_item.is_a? Comparable
+            array_item
+          else
+            array_item.hash
+          end
+        end
+
+        same = (m1 == m2)
       else
         same = false
       end

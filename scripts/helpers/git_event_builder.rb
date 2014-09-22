@@ -2,6 +2,7 @@
 require 'set'
 require 'fileutils'
 require_relative 'git_utils'
+require_relative 'couch'
 require_relative 'markdown_utils'
 require_relative 'secret'
 require_relative 'json_constants'
@@ -14,6 +15,7 @@ class GitEventBuilder
   def initialize
     #Skip xml repo, it's not interesting if we have the couch database
     @maintain_xml_repo = false
+    @logger = Logger.new('logfile.log')
 
     @events = {}
     @all_laws = {}
@@ -45,29 +47,37 @@ class GitEventBuilder
   # Populate XML and Markdown repos (if 'previous' is nil, load everything)
   def update(previous)
     add_cloudant_events previous
-    puts "About to process #{@events.length} dates"
-    process_events
-    save_index
+    if @events.length > 0
+      puts "About to process #{@events.length} dates"
+      @logger.info "About to process #{@events.length} dates"
+      process_events
+      save_index
+      push_markdown_repo
+    else
+      puts "Nothing to do."
+      @logger.info "Nothing to do."
+    end
+    
   end
 
   # Save index.json: a file mapping BWBIDs to paths. This function also the markdown folder: delete paths that don't exist in the index and print an error message if vice versa
   def save_index
-    if validate_markdown_repo
+    # if validate_markdown_repo
 
-      # Write full list to json file
-      open(INDEX_PATH, 'w') do |f|
-        f.puts JSON.pretty_generate @index
-      end
-
-      commit_markdown_repo(@today, ar_add=nil, message='index ')
+    # Write full list to json file
+    open(INDEX_PATH, 'w') do |f|
+      f.puts JSON.pretty_generate @index
     end
+
+    commit_markdown_repo(@today, ar_add=nil, message='index ')
+    # end
   end
 
   # Validate if all files and only the files from BWB list are in our folders
   def validate_markdown_repo
     validated = true
 
-    puts 'Validating if markdown files correspond to BWB list'
+    @logger.info 'Validating if markdown files correspond to BWB list'
     Dir.chdir(MARKDOWN_FOLDER)
     all_paths = Dir['**/BWB*/README.md']
     all_files = {}
@@ -76,7 +86,7 @@ class GitEventBuilder
       if m
         all_files[m[2]] = m[1]
       else
-        puts "ERROR: #{path} was not a proper path"
+        @logger.error "ERROR: #{path} was not a proper path"
       end
     end
 
@@ -91,7 +101,7 @@ class GitEventBuilder
         puts bwb_id
       end
       unless (regeling_info[EXPIRATION_DATE] and regeling_info[EXPIRATION_DATE] <= @today) or File.exists? "#{regeling_info[JsonConstants::PATH]}/README.md"
-        puts "ERROR: #{regeling_info[JsonConstants::PATH]} did not exist at #{regeling_info[JsonConstants::PATH]}/README.md, but should exist according to BwbIdList"
+        @logger.error "ERROR: #{regeling_info[JsonConstants::PATH]} did not exist at #{regeling_info[JsonConstants::PATH]}/README.md, but should exist according to BwbIdList"
         validated = false
       end
       # Remove element from map; it exists
@@ -158,16 +168,19 @@ class GitEventBuilder
     puts 'Querying all expressions in CouchDB...'
 
     if previous_index
-      generated = previous_index[GENERATED_ON]
-      rows_cloudant = Couch::CLOUDANT_CONNECTION.get_rows_for_view('bwb', 'RegelingInfo', 'modifiedAfter', {:startkey => generated})
+      add_events_based_on_index(previous_index)
     else
       #Get all expressions in cloudant
-      str_our_expressions = open("http://#{Secret::CLOUDANT_NAME}.cloudant.com/bwb/_design/RegelingInfo/_view/all").read
-      rows_cloudant = JSON.parse(str_our_expressions.force_encoding('utf-8'))['rows']
+      add_events_initial_population
     end
+  end
 
-    puts "Found #{rows_cloudant.length} updated documents"
-    rows_cloudant.each do |row|
+  def add_events_initial_population
+    str_our_expressions = open("http://#{Secret::CLOUDANT_NAME}.cloudant.com/bwb/_design/RegelingInfo/_view/all").read
+    rows = JSON.parse(str_our_expressions.force_encoding('utf-8'))['rows']
+
+    puts "Found #{rows.length} documents"
+    rows.each do |row|
       bwb_id = row['key']
       regeling_info = row['value']
 
@@ -186,11 +199,65 @@ class GitEventBuilder
     end
   end
 
+  def add_events_based_on_index(previous_index)
+    last_index_date = previous_index[GENERATED_ON]
+
+    # Add previous index to law list
+    previous_index[LAW_LIST].each do |bwb_id, regeling_info|
+      add_to_law_list(regeling_info)
+    end
+
+    # Get recently modified docs (after last index)
+    rows_modified = Couch::CLOUDANT_CONNECTION.get_rows_for_view('bwb', 'RegelingInfo', 'modifiedAfter', {:startkey => "\"#{last_index_date}-some_string_to_exclude_this_date\""})
+    rows_modified.each do |row|
+      regeling_info = row['value']
+      bwb_id = regeling_info [JsonConstants::BWB_ID]
+
+      # Add doc to law list if it contains new info
+      add_to_law_list(regeling_info)
+
+      # Get retraction date for this doc from previous index
+      existing_retraction_date = nil
+      if previous_index[LAW_LIST][bwb_id] and previous_index[LAW_LIST][bwb_id][JsonConstants::EXPIRATION_DATE]
+        existing_retraction_date = previous_index[LAW_LIST][bwb_id][JsonConstants::EXPIRATION_DATE]
+      end
+
+      retraction_date = regeling_info[EXPIRATION_DATE]
+      # If our retraction date is either different than the existing metadata, or later than the last index, process it
+      if retraction_date and (retraction_date != existing_retraction_date or existing_retraction_date > last_index_date)
+        handle_retraction(@today, bwb_id, regeling_info)
+      end
+
+      # If there are expressions that were added after our last index, make an add event (if it's not after retraction of the law)
+      # Note: if !addedToCouchDb, then the expression is from *before* 2014-07-24
+      if regeling_info['addedToCouchDb'] and regeling_info['addedToCouchDb'] >= last_index_date
+        if !retraction_date or regeling_info[DATE_LAST_MODIFIED] < retraction_date
+          handle_modification(bwb_id, regeling_info)
+          # else
+          # puts "NOTE: #{bwb_id} was retracted before it was last modified. Ignoring modification"
+        end
+      end
+    end
+  end
+
   def add_to_law_list(regeling_info)
     info = @index[LAW_LIST][regeling_info[BWB_ID]]
-    if !info or info[DATE_LAST_MODIFIED] < regeling_info[DATE_LAST_MODIFIED]
+    if !info or
+        info[DATE_LAST_MODIFIED] < regeling_info[DATE_LAST_MODIFIED] or
+        (metadata_updated(info, regeling_info))
       @index[LAW_LIST][regeling_info[BWB_ID]] = regeling_info
     end
+  end
+
+  def metadata_updated(info, info2)
+    if info['couchDbModificationDate'] and info2['couchDbModificationDate']
+      earlier_modification_date = info['couchDbModificationDate'] < info2['couchDbModificationDate']
+    elsif !info['couchDbModificationDate'] and info2['couchDbModificationDate']
+      earlier_modification_date = true
+    else
+      earlier_modification_date = false
+    end
+    info[DATE_LAST_MODIFIED] == info2[DATE_LAST_MODIFIED] and earlier_modification_date
   end
 
   def handle_modification(bwb_id, regeling_info)
@@ -206,7 +273,7 @@ class GitEventBuilder
   def handle_retraction(today, bwb_id, regeling_info)
     retraction_date = regeling_info[EXPIRATION_DATE]
     if retraction_date and retraction_date.strip.length > 0
-      if today >= retraction_date # If retraction date for #{bwb_id} is before or on today; process deletion
+      if retraction_date <= today # If retraction date for #{bwb_id} is before or on today; process deletion
         # Add deletion event
         events_for_date = @events[retraction_date]
         events_for_date ||= [] # Initialize to empty array if it doesn't exist
@@ -265,16 +332,16 @@ class GitEventBuilder
         # - Markdown
         MarkdownUtils::write_markdown_file(markdown, md_folder, md_path)
       end
-      # rescue => e
-      #   puts "ERROR: while updating #{entry[BWB_ID]}: #{e}"
-      #   # Try a second time after waiting 1 minute
-      #   if second_try
-      #     raise 'Second try also failed'
-      #   else
-      #     puts '       Retrying after 1 minute'
-      #     sleep(60)
-      #     return update_entry(law_list, entry, second_try=true)
-      #   end
+      rescue => e
+        @logger.error "ERROR while updating #{entry[BWB_ID]}: #{e}"
+        # Try a second time after waiting 1 minute
+        if second_try
+          @logger.error 'Second try also failed. Ignoring entry'
+        else
+          @logger.error '       Retrying after 1 minute'
+          sleep(60)
+          return update_entry(law_list, entry, second_try=true)
+        end
     end
   end
 
@@ -324,7 +391,6 @@ class GitEventBuilder
   end
 
   def process_events
-
     ## Make sure that the index will align with the result of all events
     # validate_events
 
@@ -332,7 +398,7 @@ class GitEventBuilder
     # TODO if ever re-populating, url-ify the paths in CouchDB: get rid of accents on letters, etc. This happens for new docs, but old docs still have ugly paths sometimes
     start_from = '0000-00-00'
     dates=[]
-    puts "Starting from #{start_from}"
+    # puts "Starting from #{start_from}"
     @events.keys.each do |date|
       if date >= start_from
         dates << date
@@ -342,9 +408,9 @@ class GitEventBuilder
     end
     # Start with earliest date, so sort keys
     dates.sort!
-    puts "First: #{dates.first}"
-    puts "Last:  #{dates.last}"
-    puts "Left with #{dates.length} dates"
+    @logger.info "First: #{dates.first}"
+    @logger.info "Last:  #{dates.last}"
+    @logger.info "Left with #{dates.length} dates"
 
     # git_gc # Git garbage collect
     dates.each do |author_date|

@@ -1,3 +1,4 @@
+require 'nokogiri'
 module MarkdownUtils
   XSLT_METALEX = Nokogiri::XSLT(File.open('../../xslt/metalex_to_bwb.xslt'))
   XSLT_MARKDOWN = Nokogiri::XSLT(File.open('../../xslt/xml_to_markdown.xslt'))

@@ -3,7 +3,6 @@ require 'uri'
 require 'nokogiri'
 require 'zip'
 require 'json'
-require 'zip/file'
 require_relative '../helpers/bwb_list_parser'
 require_relative '../helpers/bwb_couch_helper'
 include BwbCouchHelper
@@ -14,9 +13,9 @@ include BwbCouchHelper
 
 # Get government XML
 puts 'Downloading XML'
-zipped_file = open("http://wetten.overheid.nl/BWBIdService/BWBIdList.xml.zip")
+zipped_file = open('http://wetten.overheid.nl/BWBIdService/BWBIdList.xml.zip')
 xml_source = nil
-Zip::File.open(zipped_file) do |zip|
+Zip::ZipFile.open(zipped_file) do |zip|
   xml_source = zip.read('BWBIdList.xml').force_encoding('UTF-8')
 end
 if xml_source == nil
@@ -29,9 +28,9 @@ rows_cloudant, prev_paths, _ = get_cloudant_entries
 # Parse government XML
 sax_handler = BwbListParser.new(prev_paths)
 parser = Nokogiri::XML::SAX::Parser.new(sax_handler)
-puts "Parsing XML..."
+puts 'Parsing XML...'
 parser.parse xml_source
-puts "XML parsed."
+puts 'XML parsed.'
 
 bwb_list = sax_handler.bwb_list
 

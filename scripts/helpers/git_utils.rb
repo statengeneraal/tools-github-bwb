@@ -259,8 +259,8 @@ module GitUtils
       # puts "git add #{adds}"
       system("git add #{adds}")
     else
-      # puts 'git add .'
-      system('git add .')
+      # puts 'git add --all'
+      system('git add --all')
     end
     # puts "git commit -am \"#{message+date}\" --quiet --date '#{get_author_date(date)}'"
     system("git commit -am \"#{message+date}\" --quiet --date '#{get_author_date(date)}'") #
@@ -327,6 +327,11 @@ module GitUtils
     # puts "git commit -am \"#{message+author_date}\" --quiet --date '#{get_author_date(author_date)}'"
     system("git commit -am \"#{message+author_date}\" --quiet --date '#{get_author_date(author_date)}'") #
 
+    Dir.chdir('..')
+  end
+  def push_markdown_repo
+    Dir.chdir(MARKDOWN_FOLDER)
+    system('git push')
     Dir.chdir('..')
   end
 end

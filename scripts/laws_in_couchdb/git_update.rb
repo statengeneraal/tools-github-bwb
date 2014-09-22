@@ -1,5 +1,6 @@
 require 'nokogiri'
 require 'json'
+require 'logger'
 require 'open-uri'
 require 'net/http'
 require 'fileutils'
