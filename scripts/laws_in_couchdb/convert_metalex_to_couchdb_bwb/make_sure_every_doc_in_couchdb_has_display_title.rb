@@ -3,9 +3,9 @@
 require 'sparql/client'
 require 'json'
 require 'open-uri'
-require_relative '../../helpers/bwb_couch_helper'
+require_relative '../../helpers/update_couch_helper'
 require_relative '../../helpers/couch'
-include BwbCouchHelper
+include UpdateCouchHelper
 
 SPARQL_ENDPOINT = URI('http://doc.metalex.eu:8000/sparql/')
 SPARQL_CLIENT = SPARQL::Client.new(SPARQL_ENDPOINT)
@@ -118,7 +118,7 @@ def set_docs(bulk, titles)
     end
   end
   if changed.length > 0
-    flush(changed)
+    flush(changed, Couch::CLOUDANT_CONNECTION)
   end
 end
 

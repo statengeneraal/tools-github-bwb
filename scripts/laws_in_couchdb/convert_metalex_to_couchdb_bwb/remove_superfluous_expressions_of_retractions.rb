@@ -2,9 +2,9 @@ require 'sparql/client'
 require 'json'
 require 'open-uri'
 require 'set'
-require_relative '../../helpers/bwb_couch_helper'
+require_relative '../../helpers/update_couch_helper'
 require_relative '../../helpers/couch'
-include BwbCouchHelper
+include UpdateCouchHelper
 
 suspicious_rows = Couch::CLOUDANT_CONNECTION.get_rows_for_view('bwb', 'RegelingInfo', 'expressionOfRetraction')
 puts "Found #{suspicious_rows.length} suspicious looking docs"

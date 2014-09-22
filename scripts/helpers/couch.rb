@@ -71,9 +71,20 @@ module Couch
       result = JSON.parse(res.body)
       docs = []
       result['rows'].each do |row|
-        docs << row['doc']
+        if row['error']
+          puts "#{row['key']}: #{row['error']}"
+          puts "#{row['reason']}"
+        else
+          docs << row['doc']
+        end
       end
       docs
+    end
+
+    # Flushes the given hashes to CouchDB
+    def flush_bulk(database, docs)
+      body = {:docs => docs}.to_json #.force_encoding('utf-8')
+      post("/#{database}/_bulk_docs", body)
     end
 
     # Returns an array of the full documents for given view, possibly filtered with given parameters. Note that the 'include_docs' parameter must be set to true for this.
@@ -124,6 +135,15 @@ module Couch
            Secret::CLOUDANT_NAME,
        password:
            Secret::CLOUDANT_PASSWORD
+      }
+  )
+
+  LAWLY_CONNECTION = Server.new(
+      "#{Secret::LAWLY_NAME}.cloudant.com", "80",
+      {name:
+           Secret::LAWLY_NAME,
+       password:
+           Secret::LAWLY_PASSWORD
       }
   )
 end

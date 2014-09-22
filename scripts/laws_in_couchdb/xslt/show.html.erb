@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]><html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]--><!--[if IE 7]><html class="no-js lt-ie9 lt-ie8"> <![endif]--><!--[if IE 8]><html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--><!--suppress HtmlUnknownTarget --><html class="no-js"> <!--<![endif]--><head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, maximum-scale=1.0, minimum-scale=1.0, initial-scale=1.0, user-scalable=no"/>
+<title><%= doc['displayTitle'] %> — Lawly</title><meta name="description" content="<%= doc['officieleTitel'] %>"><link href='http://fonts.googleapis.com/css?family=Varela+Round%7CRoboto+Condensed' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" href="//assets.lawly.eu/css/normalize.css"><link rel="stylesheet" href="//assets.lawly.eu/css/main.css">
+<link rel="stylesheet" href="//assets.lawly.eu/css/lawly-document.css"><link rel="stylesheet" href="//assets.lawly.eu/css/bwb.css">
+<script src="//assets.lawly.eu/js/modernizr.js"></script><script src="//assets.lawly.eu/js/above_the_fold.js"></script></head><body>
+<!--[if lt IE 8]><p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade
+your browser</a> to improve your experience.</p><![endif]--><div id="cookie-bnr" class="initializing"><span id="cookie-copy">Deze website maakt gebruik van cookies.</span><button type="button" id="cookie-bnr-ok">ok</button>
+</div><script>var o = document.getElementById("cookie-bnr-ok");if (o) {o.addEventListener("click", rmCkieBnr, false);}</script>
+<div id="page-container"><div id="drawer" class="initializing"><div id="navigation-menu"><nav id="document-navigation"><input id="menu-filter" placeholder="Filter op tekst"/>
+<%= doc['toc'] %></nav></div><button id="nav-toggle"></button><script>var navMenu = document.getElementById("navigation-menu");cllpsLists(navMenu);prstNavMnu(navMenu);setNavBtn(navMenu);</script>
+<div id="main"><nav id='top-nav-bar'><div id='left-container'><div id='title-container'><a href='/' id='title-anchor'>LAWLY</a><div id='arrow-container'>
+<div id='arrow'></div></div></div></div><div id='search-container'><form action='/search' id='search-form' method='get'>
+<input id='search' maxlength='120' name='q' placeholder='Zoek een tekst' type='text'></form></div></nav><div id="doc-container"><div id="doc-positioner"><div id="doc-margins">
+<div id="last-modified">Laatst gewijzigd op <span id="last-modified-date"><%= date_last_modified %></span></div><div id='document'><%= doc['html'] %></div></div></div></div><div id="drawer-overlay"></div><script>var ovl = document.getElementById("drawer-overlay");if (ovl) {ovl.addEventListener("click", clDrwr, false);}</script>
+</div></div></div><script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><script>window.jQuery || document.write('<script src="//assets.lawly.eu/js/jquery.js"><\/script>')</script><script src="//assets.lawly.eu/js/main.js"></script><script>initLawlyDoc();(function(a,e,f,b,c,d){a.GoogleAnalyticsObject=b;a[b]||(a[b]=function(){(a[b].q=a[b].q||[]).push(arguments)});a[b].l=+new Date;c=e.createElement(f);d=e.getElementsByTagName(f)[0];c.src="//www.google-analytics.com/analytics.js";d.parentNode.insertBefore(c,d)})(window,document,"script","ga");ga("create","UA-54809256-2");ga("send","pageview");</script></body></html>
