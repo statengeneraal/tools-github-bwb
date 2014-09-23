@@ -27,7 +27,7 @@ def flush non_metalex, files
       if str_xml.length > 0
         doc['_attachments'] = {
             'data.xml' =>{
-                'content_type' => 'application/xml',
+                'content_type' => 'text/xml',
                 'data' => Base64.encode64(str_xml)
             }
         }

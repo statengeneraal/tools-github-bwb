@@ -153,7 +153,7 @@ module UpdateCouchHelper
           doc['addedToCouchDb'] = today
           doc['_attachments'] = {
               'data.xml' => {
-                  'content_type' => 'application/xml',
+                  'content_type' => 'text/xml',
                   'data' => Base64.encode64(xml)
               }
           }
