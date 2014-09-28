@@ -13,7 +13,7 @@ def run_script
   puts 'Downloading XML'
   zipped_file = open('http://wetten.overheid.nl/BWBIdService/BWBIdList.xml.zip')
   xml_source = nil
-  Zip::ZipFile.open(zipped_file) do |zip|
+  Zip::File.open(zipped_file) do |zip|
     xml_source = zip.read('BWBIdList.xml').force_encoding('UTF-8')
   end
   if xml_source == nil
