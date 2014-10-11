@@ -4,6 +4,7 @@ require_relative 'couch'
 require 'rest-client'
 require 'cgi'
 require 'json'
+require 'base64'
 require 'open-uri'
 
 module UpdateCouchHelper
@@ -149,22 +150,22 @@ module UpdateCouchHelper
         begin
           xml = open(url, :read_timeout => 20*60).read
           doc['_id'] = "#{doc[JsonConstants::BWB_ID]}/#{doc[JsonConstants::DATE_LAST_MODIFIED]}"
-          doc['couchDbModificationDate'] = today
-          doc['addedToCouchDb'] = today
-          doc['_attachments'] = {
-              'data.xml' => {
-                  'content_type' => 'text/xml',
-                  'data' => Base64.encode64(xml)
-              }
-          }
-          bulk << doc
-          bytesize += xml.bytesize
-          i+=1
-          if i > 0 and i % 10 == 0
-            puts "Downloaded #{i} new expressions."
-          end
         rescue
           puts "Could not download #{url}"
+        end
+        doc['couchDbModificationDate'] = today
+        doc['addedToCouchDb'] = today
+        doc['_attachments'] = {
+            'data.xml' => {
+                'content_type' => 'text/xml',
+                'data' => Base64.encode64(xml)
+            }
+        }
+        bulk << doc
+        bytesize += xml.bytesize
+        i+=1
+        if i > 0 and i % 10 == 0
+          puts "Downloaded #{i} new expressions."
         end
       end
 
