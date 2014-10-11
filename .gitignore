@@ -11,4 +11,6 @@ md/
 xml/
 laws-markdown/
 
+logfile.log
+
 *.orig
