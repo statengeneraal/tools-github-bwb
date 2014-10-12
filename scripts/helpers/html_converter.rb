@@ -30,6 +30,7 @@ class HtmlConverter
   attr_reader :toc_xml
   attr_reader :xml
   attr_reader :id_adder
+  attr_reader :is_empty
 
   def initialize(xml, doc)
     # Add ids to xml

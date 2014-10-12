@@ -1,0 +1,46 @@
+{
+    "@context": {
+        "@base": "http://wetten.lawly.nl/id/",
+        "schema": "http://schema.org/",
+        "frbr": "http://purl.org/vocab/frbr/core#",
+        "foaf": "http://xmlns.com/foaf/0.1/",
+        "dbpedia": "http://dbpedia.org/ontology/",
+        "xsd": "http://www.w3.org/2001/XMLSchema#",
+        "lawly": "http://www.lawly.eu/vocab#",
+        "dcterms": "http://purl.org/dc/terms/",
+        "_id": "@id",
+        "bwbId": "dcterms:identifier",
+        "regelingSoort": {
+            "@id": "dcterms:type"
+        },
+        "officieleTitel": "lawly:fullTitle",
+        "displayTitle": "dcterms:title",
+        "datumLaatsteWijziging": {
+            "@id": "dcterms:modified",
+            "@type": "xsd:date"
+        },
+        "vervalDatum": {
+            "@id": "schema:expires",
+            "@type": "schema:Date"
+        },
+        "frbr:realizationOf": {
+            "@type": "@id"
+        },
+        "citeertitels": {
+            "@id": "lawly:citeTitle",
+            "@type": "lawly:CiteTitle"
+        },
+        "titel": "dcterms:title",
+        "status": "lawly:status",
+        "inwerkingtredingsDatum": {
+            "@id": "lawly:dateOfEffect",
+            "@type": "xsd:date"
+        },
+        "dcterms:references":{
+            "@type":"@id"
+        },
+        "nietOfficieleTitels": "dcterms:alternative",
+        "afkortingen":"dbpedia:abbreviation"
+
+    }
+}
