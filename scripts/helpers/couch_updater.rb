@@ -80,7 +80,7 @@ class CouchUpdater
     doc['@context'] = 'http://assets.lawly.eu/ld/bwb_context.jsonld'
     doc['@type'] = 'frbr:Expression'
     doc['frbr:realizationOf'] = doc[JsonConstants::BWB_ID]
-    doc['foaf:page'] = "#{LAWLY_ROOT}bwb:#{expression_id}"
+    doc['foaf:page'] = "#{LAWLY_ROOT}bwb/#{expression_id}"
     doc['_id'] = expression_id
     doc['couchDbModificationDate'] = @today
     doc['displayKind'] = get_display_kind(doc)
