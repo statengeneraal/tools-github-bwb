@@ -138,7 +138,7 @@ class CouchUpdater
   def process_changes
     add_new_expressions
     @realizations = get_realization_map(@new_expressions)
-    update_works
+    # update_works
     process_changed_metadata
     puts 'Done.'
   end
@@ -171,7 +171,9 @@ class CouchUpdater
     end
   end
 
+  #TODO check if work already exists
   def update_works
+    raise 'not implemented yet'
     @bytesize = 0
     @bulk = []
 
