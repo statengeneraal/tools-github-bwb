@@ -68,7 +68,9 @@ module UpdateCouchHelper
     bytesize += doc['html'].bytesize if doc['html']
     if doc['_attachments']
       doc['_attachments'].each do |_, val|
-        bytesize += val['data'].bytesize
+        if val['data']
+          bytesize += val['data'].bytesize
+        end
       end
     end
     bytesize += doc['toc'].bytesize if doc['toc']

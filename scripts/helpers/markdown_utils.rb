@@ -71,10 +71,12 @@ module MarkdownUtils
 
   # Convert the given entry XML to markdown, for the given BWB law list.
   def convert_to_markdown(bwb_id, entry, law_list, str_xml)
-    cache_path = "cache/#{bwb_id}%2F#{entry[DATE_LAST_MODIFIED]}.md"
+    cache_path = "cache/#{bwb_id}.#{entry[DATE_LAST_MODIFIED]}.md"
+    old_cache_path = "cache/#{bwb_id}%2F#{entry[DATE_LAST_MODIFIED]}.md"
     if File.exist? cache_path
-      # If we already generated this expression in markdown, grab it from cache
       markdown = File.open(cache_path).read
+    elsif File.exitst? old_cache_path
+      markdown = File.open(old_cache_path).read
     else
       # Else convert XML to markdown
       xml_base = Nokogiri::XML(str_xml)

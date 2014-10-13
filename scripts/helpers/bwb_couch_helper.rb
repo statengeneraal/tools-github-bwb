@@ -29,8 +29,8 @@ module BwbCouchHelper
     end
 
     bwb_list[JsonConstants::LAW_LIST].each do |bwb_id, regeling_info|
-      unless cloudant_docs["#{bwb_id}/#{regeling_info[JsonConstants::DATE_LAST_MODIFIED]}"]
-        puts "#{bwb_id}/#{regeling_info[JsonConstants::DATE_LAST_MODIFIED]} was new "
+      unless cloudant_docs["#{bwb_id}:#{regeling_info[JsonConstants::DATE_LAST_MODIFIED]}"]
+        puts "#{bwb_id}:#{regeling_info[JsonConstants::DATE_LAST_MODIFIED]} was new "
         new_expressions << regeling_info
       end
     end

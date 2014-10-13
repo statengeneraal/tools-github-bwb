@@ -38,7 +38,7 @@ class HtmlConverter
     bwbid=doc[JsonConstants::BWB_ID]
     title = doc[JsonConstants::DISPLAY_TITLE]
     @id_adder = IdAdder.new xml, bwbid
-    @id_adder.add_ids '' #"#{bwbid}/#{doc['datumLaatsteWijziging']}"
+    @id_adder.add_ids '' #"#{bwbid}:#{doc['datumLaatsteWijziging']}"
     @id_adder.set_references
 
     template = Tilt.new('erb/show.html.erb', :default_encoding => 'utf-8')
@@ -104,7 +104,7 @@ end
 #     lawly_date = row['value']['addedToLawly']
 #     bwbid = row['id']
 #     if (!lawly_date) or (lawly_date < xml_expressions[bwbid].last) or (row['value']['inlinedHtml'])
-#       keys_to_update << "#{bwbid}/#{xml_expressions[bwbid].last}"
+#       keys_to_update << "#{bwbid}:#{xml_expressions[bwbid].last}"
 #       # puts "update"
 #     end
 #     xml_expressions[bwbid] = nil
@@ -112,7 +112,7 @@ end
 #
 #   xml_expressions.each do |key, value|
 #     unless value == nil # marked nil in previous loop
-#       keys_to_update << "#{key}/#{value.last}"
+#       keys_to_update << "#{key}:#{value.last}"
 #       # puts "new"
 #     end
 #   end

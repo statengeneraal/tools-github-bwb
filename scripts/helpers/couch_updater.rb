@@ -76,17 +76,18 @@ class CouchUpdater
 
   # noinspection RubyStringKeysInHashInspection
   def setup_doc_as_new_expression(doc, str_xml)
-    expression_id = "#{doc[JsonConstants::BWB_ID]}/#{doc[JsonConstants::DATE_LAST_MODIFIED]}"
+    expression_id = "#{doc[JsonConstants::BWB_ID]}:#{doc[JsonConstants::DATE_LAST_MODIFIED]}"
     doc['@context'] = 'http://assets.lawly.eu/ld/bwb_context.jsonld'
     doc['@type'] = 'frbr:Expression'
     doc['frbr:realizationOf'] = doc[JsonConstants::BWB_ID]
-    doc['foaf:page'] = "#{LAWLY_ROOT}bwb/#{expression_id}"
+    doc['foaf:page'] = "#{LAWLY_ROOT}bwb:#{expression_id}"
     doc['_id'] = expression_id
     doc['couchDbModificationDate'] = @today
     doc['displayKind'] = get_display_kind(doc)
     doc['addedToCouchDb'] = @today
     doc.delete('xml')
     #TODO add dcterms:tableOfContents, dcterms:publisher='KOOP'
+    # TODO dcterm:seealso/sameas metalex id
 
     html_converter = HtmlConverter.new(Nokogiri::XML(str_xml), doc)
     str_html =html_converter.full_html.to_s
@@ -113,7 +114,7 @@ class CouchUpdater
   end
 
   def convert_new_expression_to_work(doc, realizations)
-  #TODO handle case where work already exists...
+    #TODO handle case where work already exists...
     bwb_id = doc[JsonConstants::BWB_ID]
     realizations[bwb_id].each do |realization_id|
       if realization_id > doc['_id']
@@ -273,9 +274,10 @@ class CouchUpdater
       #   puts 'uuuuh'
       # end
       existing_couch_ids[id] = true
+      existing_couch_ids[id.gsub('/', ':')] = true
     end
     bwb_list[JsonConstants::LAW_LIST].each do |bwb_id, regeling_info|
-      expression_id="#{bwb_id}/#{regeling_info[JsonConstants::DATE_LAST_MODIFIED]}"
+      expression_id="#{bwb_id}:#{regeling_info[JsonConstants::DATE_LAST_MODIFIED]}"
       unless existing_couch_ids[expression_id] or is_blacklisted?(bwb_id)
         @logger.info "#{expression_id} was new."
         @new_expressions << regeling_info
