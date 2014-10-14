@@ -33,5 +33,3 @@ Some technical notes
 Documents are stored as CouchDB JSON-files with metadata fields that are not *exactly* the same as the XML elements. Compare `XmlConstants.rb` with `JsonConstants.rb`. An attachment called `data.xml` contains the document content, unsurprisingly in XML format. Document IDs are of the form `{BWBID}:{EXPRESSION DATE}`, where the expression date is specified by the field `datumLaatsteWijzing` (date last modified).
 
 Note that a field called "xml" has been added to the documents, which should always be `null`. This is a remnant of early iterations of the database in which document content was inlined along with the metadata. The reasoning was that bulk requests are easier this way. However, metadata does not get compressed, as attachments do. Also inlining XML made it harder to query documents just for their metadata, needing secondary queries.
-
-The updater service is run as a single-dyno Heroku deployment with European locality. The Heroku platform was chosen because it is reliable, easy to deploy on and free to use in this case.

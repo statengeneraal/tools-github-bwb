@@ -80,9 +80,9 @@ class HtmlConverter
   def make_html
     @is_empty = (@xml.root.name == 'error' or id_adder.xml.root.inner_text.gsub(/\s*/, '').length < 1)
     if @is_empty
-      @inner_html = Nokogiri::HTML '<h1>Dit document kan niet weergegeven worden</h1>'
+      @inner_html = '<h1>Dit document kan niet weergegeven worden</h1>'
     else
-      @inner_html = BWB_TO_HTML.transform(@id_adder.xml)
+      @inner_html = BWB_TO_HTML.transform(@id_adder.xml).to_s
     end
   end
 

@@ -94,23 +94,26 @@ class CouchUpdater
     doc['empty'] = html_converter.is_empty
     doc['dcterms:references']=html_converter.id_adder.references_bwbs.to_a
 
+    b64_xml = Base64.encode64(str_xml)
+    b64_html =  Base64.encode64(str_html)
+    b64_toc=Base64.encode64(html_converter.toc_xml.to_s)
     doc['_attachments'] = {
         'data.xml' => {
             'content_type' => 'text/xml',
-            'data' => Base64.encode64(str_xml)
+            'data' => b64_xml
         },
         'show.html' => {
             'content_type' => 'text/html',
-            'data' => Base64.encode64(str_html)
+            'data' => b64_html
         }
     }
     if html_converter.toc_xml.root.element_children.length > 0
       doc['_attachments']['toc.xml'] = {
           'content_type' => 'text/xml',
-          'data' => Base64.encode64(html_converter.toc_xml.to_s)
+          'data' =>  b64_toc
       }
     end
-    str_xml.bytesize + html_converter.full_html.to_s.bytesize + html_converter.toc_xml.to_s.bytesize
+    b64_xml.bytesize + b64_toc.to_s.bytesize + b64_html.bytesize
   end
 
   def convert_new_expression_to_work(doc, realizations)
