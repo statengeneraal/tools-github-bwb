@@ -5,6 +5,7 @@ require_relative '../helpers/bwb_list_parser'
 require_relative '../helpers/couch_updater'
 require 'nokogiri'
 require 'base64'
+require 'gc'
 require 'open-uri'
 require 'sparql/client'
 include UpdateCouchHelper
@@ -82,8 +83,12 @@ docs_without_context.each do |_doc|
       # Flush if bulk too big
       if bytesize >= 10*1024*1024
         bulk_write_to_bwb_database(bulk)
-        puts "Flushed #{bulk.length}"
+        # puts "Flushed #{bulk.length}"
+        bulk.each do |doc_|
+          doc_.clear
+        end
         bulk.clear
+        GC.start
         bytesize = 0
       end
     else
