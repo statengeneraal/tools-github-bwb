@@ -5,7 +5,6 @@ require_relative '../helpers/bwb_list_parser'
 require_relative '../helpers/couch_updater'
 require 'nokogiri'
 require 'base64'
-require 'gc'
 require 'open-uri'
 require 'sparql/client'
 include UpdateCouchHelper
