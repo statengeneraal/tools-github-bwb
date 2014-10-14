@@ -22,6 +22,8 @@ BWB_TO_HTML = Nokogiri::XSLT(File.open('./xslt/bwb_to_html.xslt'))
 EXTRACT_TOC = Nokogiri::XSLT(File.open('./xslt/bwb_extract_toc.xslt'))
 EXTRACT_TOC_XML = Nokogiri::XSLT(File.open('./xslt/bwb_extract_toc_xml.xslt'))
 EXTRACT_POLYMER_TOC = Nokogiri::XSLT(File.open('./xslt/bwb_extract_polymer_toc.xslt'))
+TEMPLATE = Tilt.new('./erb/show.html.erb', :default_encoding => 'utf-8')
+WORK_TEMPLATE = Tilt.new('./erb/show_work.html.erb', :default_encoding => 'utf-8')
 
 class HtmlConverter
   attr_reader :full_html
@@ -41,7 +43,6 @@ class HtmlConverter
     @id_adder.add_ids '' #"#{bwbid}:#{doc['datumLaatsteWijziging']}"
     @id_adder.set_references
 
-    template = Tilt.new('erb/show.html.erb', :default_encoding => 'utf-8')
 
     #Convert xml to html
     make_html
@@ -56,7 +57,17 @@ class HtmlConverter
       human_readable_date_last = "#{last_modified_match[3]}-#{last_modified_match[2]}-#{last_modified_match[1]}"
     end
 
-    @full_html = template.render(Object.new, {
+    @full_html = TEMPLATE.render(Object.new, {
+        :page_title => title,
+        :date_last_modified => human_readable_date_last,
+        :description => doc[JsonConstants::OFFICIAL_TITLE],
+        :toc => @toc,
+        :inner_html => @inner_html
+    })
+  end
+
+  def make_work_html
+    @full_html = WORK_TEMPLATE.render(Object.new, {
         :page_title => title,
         :date_last_modified => human_readable_date_last,
         :description => doc[JsonConstants::OFFICIAL_TITLE],
