@@ -12,6 +12,10 @@ include UpdateCouchHelper
 docs_without_context = Couch::CLOUDANT_CONNECTION.get_docs_for_view('bwb', 'RegelingInfo', 'all_expressions_with_slash')
 docs_with_colon = Couch::CLOUDANT_CONNECTION.get_rows_for_view('bwb', 'RegelingInfo', 'allExpressionsWithColon')
 
+docs_without_context.sort_by! do |a|
+  a['_attachments']['data.xml'].length
+end
+
 already_converted = {}
 docs_with_colon.each do |row|
   #puts row['id'].gsub(':','/')
