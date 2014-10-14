@@ -86,7 +86,7 @@ class CouchUpdater
     doc['displayKind'] = get_display_kind(doc)
     doc['addedToCouchDb'] = @today
     doc.delete('xml')
-    #TODO add dcterms:tableOfContents, dcterms:publisher='KOOP'
+    # TODO add dcterms:tableOfContents, dcterms:publisher='KOOP'
     # TODO dcterm:seealso/sameas metalex id
 
     html_converter = HtmlConverter.new(Nokogiri::XML(str_xml), doc)
@@ -95,7 +95,7 @@ class CouchUpdater
     doc['dcterms:references']=html_converter.id_adder.references_bwbs.to_a
 
     b64_xml = Base64.encode64(str_xml)
-    b64_html =  Base64.encode64(str_html)
+    b64_html = Base64.encode64(str_html)
     b64_toc=Base64.encode64(html_converter.toc_xml.to_s)
     doc['_attachments'] = {
         'data.xml' => {
@@ -110,7 +110,7 @@ class CouchUpdater
     if html_converter.toc_xml.root.element_children.length > 0
       doc['_attachments']['toc.xml'] = {
           'content_type' => 'text/xml',
-          'data' =>  b64_toc
+          'data' => b64_toc
       }
     end
     b64_xml.bytesize + b64_toc.to_s.bytesize + b64_html.bytesize
@@ -233,7 +233,7 @@ class CouchUpdater
 
   def get_display_kind(doc)
     display_kind = nil
-    if                          doc[JsonConstants::KIND]
+    if doc[JsonConstants::KIND]
       case doc[JsonConstants::KIND]
         when 'AMvB',
             'AMvB-BES',

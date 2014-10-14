@@ -13,7 +13,7 @@ docs_without_context = Couch::CLOUDANT_CONNECTION.get_docs_for_view('bwb', 'Rege
 docs_with_colon = Couch::CLOUDANT_CONNECTION.get_rows_for_view('bwb', 'RegelingInfo', 'allExpressionsWithColon')
 
 docs_without_context.sort_by! do |a|
-  a['_attachments']['data.xml'].length
+  a['_attachments']['data.xml']['length']
 end
 
 already_converted = {}
