@@ -84,7 +84,7 @@ docs_without_context.each do |_doc|
       # end
 
       # Flush if bulk too big
-      if bytesize >= 10*1024*1024
+      if bytesize >= 50*1024*1024
         bulk_write_to_bwb_database(bulk)
         # puts "Flushed #{bulk.length}"
         bulk.each do |doc_|
