@@ -31,7 +31,7 @@ puts "Still #{to_convert.length} left"
 
 docs_without_context = []
 to_convert.each_slice(150) do |slice_to_convert|
-  docs_without_context << Couch::CLOUDANT_CONNECTION.get_docs_for_view('bwb', 'RegelingInfo', 'all', {:keys => slice_to_convert})
+  docs_without_context << Couch::CLOUDANT_CONNECTION.get_docs_for_view('bwb', 'RegelingInfo', 'all_expressions_with_slash', {:keys => slice_to_convert})
 end
 docs_without_context.flatten!
 
