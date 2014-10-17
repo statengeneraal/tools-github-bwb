@@ -9,12 +9,9 @@ require 'open-uri'
 require 'sparql/client'
 include UpdateCouchHelper
 
-docs_without_context = Couch::CLOUDANT_CONNECTION.get_docs_for_view('bwb', 'RegelingInfo', 'all_expressions_with_slash')
+docs_with_slash = Couch::CLOUDANT_CONNECTION.get_rows_for_view('bwb', 'RegelingInfo', 'all_expressions_with_slash')
 docs_with_colon = Couch::CLOUDANT_CONNECTION.get_rows_for_view('bwb', 'RegelingInfo', 'allExpressionsWithColon')
 
-docs_without_context.sort_by! do |a|
-  a['_attachments']['data.xml']['length']
-end
 
 already_converted = {}
 docs_with_colon.each do |row|
@@ -24,7 +21,25 @@ end
 docs_with_colon.clear
 puts "Already converted #{already_converted.length}"
 
+to_convert = []
+docs_with_slash.each do |d|
+  unless already_converted[d['id']]
+    to_convert << d['id']
+  end
+end
+puts "Still #{to_convert.length} left"
+
+docs_without_context = []
+to_convert.each_slice(150) do |slice_to_convert|
+  docs_without_context << Couch::CLOUDANT_CONNECTION.get_docs_for_view('bwb', 'RegelingInfo', 'all', {:keys => slice_to_convert})
+end
+docs_without_context.flatten!
+
+docs_without_context.sort_by! do |a|
+  a['_attachments']['data.xml']['length']
+end
 puts "Found #{docs_without_context.length} docs without context"
+
 
 #61895 ; 61876
 # 13 new on 14-10
