@@ -28,6 +28,8 @@ puts "Found #{docs_without_context.length} docs without context"
 
 #61895 ; 61876
 # 13 new on 14-10
+# 66 new on 16-10
+# 60 new on 17-10
 
 bytesize = 0
 bulk=[]
@@ -84,7 +86,7 @@ docs_without_context.each do |_doc|
       # end
 
       # Flush if bulk too big
-      if bytesize >= 50*1024*1024 or bulk.size >= 500
+      if bytesize >= 15*1024*1024 or bulk.size >= 500
         bulk_write_to_bwb_database(bulk)
         # puts "Flushed #{bulk.length}"
         bulk.each do |doc_|

@@ -36,11 +36,14 @@
             "@id": "lawly:dateOfEffect",
             "@type": "xsd:date"
         },
-        "dcterms:references":{
-            "@type":"@id"
+        "dcterms:references": {
+            "@type": "@id"
+        },
+        "foaf:page": {
+            "@type": "@id"
         },
         "nietOfficieleTitels": "dcterms:alternative",
-        "afkortingen":"dbpedia:abbreviation"
-
+        "afkortingen": "dbpedia:abbreviation",
+        "metalexId": "owl:sameAs"
     }
 }

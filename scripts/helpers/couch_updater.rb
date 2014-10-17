@@ -132,6 +132,7 @@ class CouchUpdater
     doc.delete('frbr:realizationOf')
     doc.delete('xml')
 
+
     get_byte_size(doc)
   end
 
@@ -349,3 +350,24 @@ class CouchUpdater
   end
 
 end
+
+class Expression
+  attr_reader :bwb_id
+  attr_reader :date
+  attr_reader :id
+  attr_reader :human_date
+
+  def initialize(bwb_id, date)
+    @bwb_id=bwb_id
+    @date=date
+    @id = "#{bwb_id}:#{date}"
+
+    last_modified_match = date.match(/([0-9]+)-([0-9]+)-([0-9]+)/)
+    @human_date = nil
+    if last_modified_match
+      @human_date = "#{last_modified_match[3]}-#{last_modified_match[2]}-#{last_modified_match[1]}"
+    end
+  end
+
+end
+

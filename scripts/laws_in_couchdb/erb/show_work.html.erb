@@ -16,6 +16,19 @@ your browser</a> to improve your experience.</p><![endif]--><div id="cookie-bnr"
 <div id='arrow'></div></div></div></div><div id='search-container'><form action='/search' id='search-form' method='get'>
 <input id='search' maxlength='120' name='q' placeholder='Zoek een wettekst' type='text'></form></div></nav><div id="doc-container"><div id="doc-positioner"><div id="doc-margins">
 <div id="last-modified" class="latest-version">
+  <ol id="timeline" class="hidden">
+    <% expressions.each do |expression| %>
+        <li>
+          <a data-bwbid="<%= expression.bwb_id %>"
+             data-date="<%= expression.date %>"
+             href="/bwb/<%= expression.id %>">
+            <div class="date">
+              <%= expression.human_date %>
+            </div>
+          </a>
+        </li>
+    <% end %>
+  </ol>
   <button id="btn-time-travel">
     <span id="latest-version-checkmark">✓</span> Nieuwste versie <span id="last-modified-aside">(laatst gewijzigd op <span id="last-modified-date"><%= date_last_modified %></span>)</span>
   </button>

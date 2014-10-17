@@ -37,7 +37,7 @@ class HtmlConverter
   def initialize(xml, doc)
     # Add ids to xml
     @xml=xml
-    bwbid=doc[JsonConstants::BWB_ID]
+    bwbid = doc[JsonConstants::BWB_ID]
     title = doc[JsonConstants::DISPLAY_TITLE]
     @id_adder = IdAdder.new xml, bwbid
     @id_adder.add_ids '' #"#{bwbid}:#{doc['datumLaatsteWijziging']}"
@@ -66,12 +66,13 @@ class HtmlConverter
     })
   end
 
-  def make_work_html
+  def make_work_html(expressions)
     @full_html = WORK_TEMPLATE.render(Object.new, {
         :page_title => title,
         :date_last_modified => human_readable_date_last,
         :description => doc[JsonConstants::OFFICIAL_TITLE],
         :toc => @toc,
+        :expressions => expressions,
         :inner_html => @inner_html
     })
   end
