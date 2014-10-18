@@ -75,7 +75,7 @@ class CouchUpdater
   end
 
   # noinspection RubyStringKeysInHashInspection
-  def setup_doc_as_new_expression(doc, str_xml)
+  def setup_doc_as_new_expression_without_attachments(doc)
     expression_id = "#{doc[JsonConstants::BWB_ID]}:#{doc[JsonConstants::DATE_LAST_MODIFIED]}"
     doc['@context'] = 'http://assets.lawly.eu/ld/bwb_context.jsonld'
     doc['@type'] = 'frbr:Expression'
@@ -88,24 +88,38 @@ class CouchUpdater
     doc.delete('xml')
     # TODO add dcterms:tableOfContents, dcterms:publisher='KOOP'
     # TODO dcterm:seealso/sameas metalex id
+  end
 
+  # noinspection RubyStringKeysInHashInspection
+  def add_original_xml(doc, b64_xml)
+    doc['_attachments'] = doc['_attachments'] || {}
+    doc['_attachments']['data.xml'] = {
+        'content_type' => 'text/xml',
+        'data' => b64_xml
+    }
+  end
+
+  def setup_doc_as_new_expression(doc, str_xml)
+    setup_doc_as_new_expression_without_attachments(doc)
+
+    puts "Converting to HTML"
     html_converter = HtmlConverter.new(Nokogiri::XML(str_xml), doc)
     str_html =html_converter.full_html.to_s
     doc['empty'] = html_converter.is_empty
     doc['dcterms:references']=html_converter.id_adder.references_bwbs.to_a
 
-    b64_xml = Base64.encode64(str_xml)
+
+    # puts "Converting to base64"
     b64_html = Base64.encode64(str_html)
     b64_toc=Base64.encode64(html_converter.toc_xml.to_s)
-    doc['_attachments'] = {
-        'data.xml' => {
-            'content_type' => 'text/xml',
-            'data' => b64_xml
-        },
-        'show.html' => {
-            'content_type' => 'text/html',
-            'data' => b64_html
-        }
+
+    b64_xml = Base64.encode64(str_xml)
+    add_original_xml(doc,b64_xml)
+
+    doc['_attachments'] = doc['_attachments'] || {}
+    doc['_attachments']['show.html'] = {
+        'content_type' => 'text/html',
+        'data' => b64_html
     }
     if html_converter.toc_xml.root.element_children.length > 0
       doc['_attachments']['toc.xml'] = {
@@ -113,6 +127,7 @@ class CouchUpdater
           'data' => b64_toc
       }
     end
+    puts "Adding bytesizes: #{(b64_xml.bytesize + b64_toc.to_s.bytesize + b64_html.bytesize)/1024.0/1024.0} MB"
     b64_xml.bytesize + b64_toc.to_s.bytesize + b64_html.bytesize
   end
 

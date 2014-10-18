@@ -25,16 +25,44 @@ module Couch
     def put(uri, json)
       req = Net::HTTP::Put.new(uri)
       req.basic_auth @options[:name], @options[:password]
-      req["Content-Type"] = "text/plain;charset=utf-8"
+      req['Content-Type'] = 'text/plain;charset=utf-8'
       req.body = json
+      request(req)
+    end
+
+    def put_attachment(uri, data, content_type,rev)
+      req = Net::HTTP::Put.new("#{uri}?rev=#{rev}")
+      req.basic_auth @options[:name], @options[:password]
+      req['Content-Type'] = content_type
+      req.body = data
       request(req)
     end
 
     def post(uri, json)
       req = Net::HTTP::Post.new(uri)
       req.basic_auth @options[:name], @options[:password]
-      req["Content-Type"] = "application/json;charset=UTF-8"
+      req['Content-Type'] = 'application/json;charset=UTF-8'
       req.body = json
+      request(req)
+    end
+
+    def multipart(uri, parts)
+      boundary = 'this-is-a-boundary'
+
+      body = "---#{boundary}\ncontent-type: application/json"
+
+      parts.each do |part|
+        body += "\n#{part.to_s}\n---#{boundary}"
+      end
+      body += '---'
+
+
+      puts body
+
+      req = Net::HTTP::Post.new(uri)
+      req.basic_auth @options[:name], @options[:password]
+      req['Content-Type'] = "multipart/related;boundary=\"#{boundary}\""
+      req.body = body
       request(req)
     end
 
@@ -115,6 +143,7 @@ module Couch
       get("/#{db}/#{CGI.escape(id)}/#{attachment}").body
     end
 
+
     private
     def handle_error(req, res)
       e = RuntimeError.new("#{res.code}:#{res.message}\nMETHOD:#{req.method}\nURI:#{req.path}\n#{res.body}")
@@ -136,7 +165,7 @@ module Couch
   end
 
   CLOUDANT_CONNECTION = Server.new(
-      "#{Secret::CLOUDANT_NAME}.cloudant.com", "80",
+      "#{Secret::CLOUDANT_NAME}.cloudant.com", '80',
       {name:
            Secret::CLOUDANT_NAME,
        password:
@@ -145,7 +174,7 @@ module Couch
   )
 
   LAWLY_CONNECTION = Server.new(
-      "#{Secret::LAWLY_NAME}.cloudant.com", "80",
+      "#{Secret::LAWLY_NAME}.cloudant.com", '80',
       {name:
            Secret::LAWLY_NAME,
        password:
