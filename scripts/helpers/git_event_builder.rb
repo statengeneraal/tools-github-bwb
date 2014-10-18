@@ -178,8 +178,7 @@ class GitEventBuilder
   end
 
   def add_events_initial_population
-    str_our_expressions = open("http://#{Secret::CLOUDANT_NAME}.cloudant.com/bwb/_design/RegelingInfo/_view/all").read
-    rows = JSON.parse(str_our_expressions.force_encoding('utf-8'))['rows']
+    rows = Couch::CLOUDANT_CONNECTION.get_rows_for_view('bwb','RegelingInfo','allExpressions')
 
     puts "Found #{rows.length} documents"
     rows.each do |row|
@@ -210,7 +209,12 @@ class GitEventBuilder
     end
 
     # Get recently modified docs (after last index)
-    rows_modified = Couch::CLOUDANT_CONNECTION.get_rows_for_view('bwb', 'RegelingInfo', 'modifiedAfter', {:startkey => "\"#{last_index_date}-some_string_to_exclude_this_date\""})
+    rows_modified = Couch::CLOUDANT_CONNECTION.get_rows_for_view('bwb',
+                                                                 'RegelingInfo',
+                                                                 'modifiedAfter',
+                                                                 {:startkey => "\"#{last_index_date}-some_string_to_exclude_this_date\""}
+    )
+
     rows_modified.each do |row|
       regeling_info = row['value']
       bwb_id = regeling_info[JsonConstants::BWB_ID]
@@ -311,7 +315,6 @@ class GitEventBuilder
     begin
       md_folder = "#{MARKDOWN_FOLDER}/#{entry[JsonConstants::PATH]}"
       md_path = "#{md_folder}/README.md"
-      txt_path = "#{md_folder}/README.txt"
       if entry[:_delete]
         # Delete expression:
         # - XML
@@ -341,6 +344,7 @@ class GitEventBuilder
         # end
       end
     rescue => e
+      puts "ERROR while updating #{entry[BWB_ID]}: #{e}"
       @logger.error "ERROR while updating #{entry[BWB_ID]}: #{e}"
       # Try a second time after waiting 1 minute
       if second_try

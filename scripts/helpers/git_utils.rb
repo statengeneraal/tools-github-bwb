@@ -34,13 +34,14 @@ module GitUtils
     old_cache_path = "cache/#{bwb_id}%2F#{entry[DATE_LAST_MODIFIED]}.xml"
     if File.exist? cache_path
       str_xml = File.open(cache_path).read
-    elsif File.exitst? old_cache_path
+    elsif File.exist? old_cache_path
       str_xml = File.open(old_cache_path).read
     else
       str_xml = open("http://#{Secret::CLOUDANT_NAME}.cloudant.com/bwb/#{bwb_id}:#{entry[DATE_LAST_MODIFIED]}/data.xml").read.force_encoding('utf-8')
 
       #Write to cache
-      File.open(cache_path, "w+") do |f|
+      FileUtils.mkdir_p 'cache' unless File.exists?('cache') # Make sure that path exists
+      File.open(cache_path, 'w+') do |f|
         f.puts str_xml
       end
     end

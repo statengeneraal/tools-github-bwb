@@ -75,7 +75,7 @@ module MarkdownUtils
     old_cache_path = "cache/#{bwb_id}%2F#{entry[DATE_LAST_MODIFIED]}.md"
     if File.exist? cache_path
       markdown = File.open(cache_path).read
-    elsif File.exitst? old_cache_path
+    elsif File.exist? old_cache_path
       markdown = File.open(old_cache_path).read
     else
       # Else convert XML to markdown
@@ -85,6 +85,7 @@ module MarkdownUtils
       # kramdown escapes tables :(
       # kramdown = Kramdown::Document.new(markdown, :input => 'markdown') # Pretty print markdown
       markdown = format_markdown(markdown)
+
       File.open(cache_path, 'w+') do |f|
         f.puts markdown
       end
