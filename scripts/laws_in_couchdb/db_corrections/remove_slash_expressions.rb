@@ -7,7 +7,7 @@ require 'base64'
 require 'open-uri'
 include UpdateCouchHelper
 
-docs_with_slash = Couch::CLOUDANT_CONNECTION.get_docs_for_view('bwb', 'RegelingInfo', 'all_expressions_with_slash', {'stale'=>'ok'})
+docs_with_slash = Couch::CLOUDANT_CONNECTION.get_docs_for_view('bwb', 'RegelingInfo', 'all_expressions_with_slash')
 
 docs_with_slash.each do |doc|
   doc['_deleted'] = true

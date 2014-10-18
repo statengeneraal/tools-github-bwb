@@ -79,7 +79,7 @@ module UpdateCouchHelper
 
   # Get metadata of documents currently in CouchDB, along with a mapping of BWBIDs to paths and a list of docs that have its path field set wrongly
   def get_cloudant_entries
-    rows_cloudant = Couch::CLOUDANT_CONNECTION.get_rows_for_view('bwb', 'RegelingInfo', 'all') #all_non_metalex
+    rows_cloudant = Couch::CLOUDANT_CONNECTION.get_rows_for_view('bwb', 'RegelingInfo', 'allExpressions') #all_non_metalex
     puts "Found #{rows_cloudant.length} expressions in our own database"
 
     paths = {}

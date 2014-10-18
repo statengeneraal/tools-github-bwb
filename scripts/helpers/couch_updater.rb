@@ -5,7 +5,6 @@ require 'nokogiri'
 require 'zip'
 require 'json'
 require_relative 'bwb_list_parser'
-require_relative 'html_converter'
 require_relative 'update_couch_helper'
 include UpdateCouchHelper
 
@@ -75,9 +74,8 @@ class CouchUpdater
   end
 
   # noinspection RubyStringKeysInHashInspection
-  def setup_doc_as_new_expression_without_attachments(doc)
+  def set_as_new_expr_no_attach(doc)
     expression_id = "#{doc[JsonConstants::BWB_ID]}:#{doc[JsonConstants::DATE_LAST_MODIFIED]}"
-    doc['@context'] = 'http://assets.lawly.eu/ld/bwb_context.jsonld'
     doc['@type'] = 'frbr:Expression'
     doc['frbr:realizationOf'] = doc[JsonConstants::BWB_ID]
     doc['foaf:page'] = "#{LAWLY_ROOT}bwb/#{expression_id}"
@@ -99,65 +97,22 @@ class CouchUpdater
     }
   end
 
+  # noinspection RubyStringKeysInHashInspection
   def setup_doc_as_new_expression(doc, str_xml)
-    setup_doc_as_new_expression_without_attachments(doc)
-
-    puts 'Converting to HTML'
-    html_converter = HtmlConverter.new(Nokogiri::XML(str_xml), doc)
-    str_html =html_converter.full_html.to_s
-    doc['empty'] = html_converter.is_empty
-    doc['dcterms:references']=html_converter.id_adder.references_bwbs.to_a
-
-    # puts "Converting to base64"
-    b64_html = Base64.encode64(str_html)
-    b64_toc=Base64.encode64(html_converter.toc_xml.to_s)
-
+    set_as_new_expr_no_attach(doc)
     b64_xml = Base64.encode64(str_xml)
     add_original_xml(doc, b64_xml)
-
-    doc['_attachments'] = doc['_attachments'] || {}
-    doc['_attachments']['show.html'] = {
-        'content_type' => 'text/html',
-        'data' => b64_html
-    }
-    if html_converter.toc_xml.root.element_children.length > 0
-      doc['_attachments']['toc.xml'] = {
-          'content_type' => 'text/xml',
-          'data' => b64_toc
-      }
-    end
-    puts "Adding bytesizes: #{(b64_xml.bytesize + b64_toc.to_s.bytesize + b64_html.bytesize)/1024.0/1024.0} MB"
-    b64_xml.bytesize + b64_toc.to_s.bytesize + b64_html.bytesize
+    puts "Adding bytesizes: #{(b64_xml.bytesize)/1024.0/1024.0} MB"
+    b64_xml.bytesize
   end
 
-  def convert_new_expression_to_work(doc, realizations)
-    #TODO handle case where work already exists...
-    bwb_id = doc[JsonConstants::BWB_ID]
-    realizations[bwb_id].each do |realization_id|
-      if realization_id > doc['_id']
-        puts "WARNING: we have a realization #{realization_id}, yet we make the work about an earlier expression #{doc['_id']}"
-        @logger.warn "WARNING: we have a realization #{realization_id}, yet we make the work about an earlier expression #{doc['_id']}"
-      end
-    end
-    doc['_id'] = bwb_id
-    doc['@type'] = 'frbr:LegalWork'
-    doc['foaf:page'] = "#{LAWLY_ROOT}bwb/#{bwb_id}"
-    doc['frbr:realization'] = realizations[bwb_id].to_a
-    doc.delete('frbr:realizationOf')
-    doc.delete('xml')
 
-
-    get_byte_size(doc)
-  end
 
   private
 
   # Download XML of given documents and upload the expressions to CouchDB
   def process_changes
     add_new_expressions
-    @realizations = get_realization_map(@new_expressions)
-
-    update_works
 
     process_changed_metadata
     puts 'Done.'
@@ -168,21 +123,19 @@ class CouchUpdater
     @bytesize = 0
     @bulk = []
     @new_expressions.each do |doc|
+      doc=doc.clone
       # Download (or skip) this document
       str_xml = get_gov_xml(doc[JsonConstants::BWB_ID])
       if str_xml
-        if str_xml.bytesize > 10*1024*1024
-          handle_large_manifestation(doc, str_xml)
-        else
-          doc_bytesize = setup_doc_as_new_expression(doc, str_xml)
-          @bulk << doc
-          @expressions_added+=1
-          @bytesize += doc_bytesize
-          if @expressions_added > 0 and @expressions_added % 10 == 0
-            puts "Downloaded #{@expressions_added} new expressions."
-          end
-          # Flush if array gets too big
-          flush_if_too_big
+        doc_bytesize = setup_doc_as_new_expression(doc, str_xml)
+        @bytesize += doc_bytesize
+        @bulk << doc
+        # Flush if array gets too big
+        flush_if_too_big
+
+        @expressions_added+=1
+        if @expressions_added > 0 and @expressions_added % 10 == 0
+          puts "Downloaded #{@expressions_added} new expressions."
         end
       end
     end
@@ -193,82 +146,6 @@ class CouchUpdater
       @bytesize = 0
       @bulk.clear
     end
-  end
-
-  def handle_large_manifestation(doc, str_xml)
-    if @bulk.length >0
-      bulk_write_to_bwb_database(@bulk)
-      @bulk.clear
-    end
-
-    setup_doc_as_new_expression_without_attachments(doc)
-    @logger.warn("#{doc['_id']} was #{str_xml.bytesize/1024.0/1024.0} MB, so not converting to HTML on this VPS")
-    b64_xml = Base64.encode64(str_xml)
-    add_original_xml(doc, b64_xml)
-
-    @bulk << doc
-    bulk_write_to_bwb_database(@bulk)
-  end
-
-  #TODO check if work already exists
-  def update_works
-    @bytesize = 0
-    @bulk = []
-
-    bwb_ids = []
-    @new_expressions.each do |doc|
-      bwb_ids << doc[JsonConstants::BWB_ID]
-    end
-    works = Couch::CLOUDANT_CONNECTION.get_docs_for_view('bwb', 'RegelingInfo', 'works', {:keys => bwb_ids})
-
-    work_mapping = {}
-    works.each do |work|
-      work_mapping[work[JsonConstants::BWB_ID]] = work
-    end
-
-    @new_expressions.each do |doc|
-      bwbid = doc[JsonConstants::BWB_ID]
-      if work_mapping[bwbid]
-        work = work_mapping[bwbid]
-        if work[JsonConstants::DATE_LAST_MODIFIED] > doc[JsonConstants::DATE_LAST_MODIFIED]
-          @logger.error("'New' expressions #{doc['_id']} was earlier than work last modified (#{work[JsonConstants::DATE_LAST_MODIFIED]})..!")
-        else
-          update_work(work, doc)
-        end
-      else
-        create_new_work(doc)
-      end
-
-      # Flush if array gets too big
-      flush_if_too_big
-    end
-    #Flush remaining
-    if @bulk.size > 0
-      bulk_write_to_bwb_database(@bulk)
-      @bytesize = 0
-      @bulk.clear
-    end
-  end
-
-  def update_work(old_work, new_expression)
-    new_work = new_expression.clone
-    new_work['_id'] = new_work[JsonConstants::BWB_ID]
-    new_work['_rev'] = old_work['_rev']
-
-    doc['_attachments'] = doc['_attachments'] || {}
-    doc['_attachments']['show.html'] = {
-        'content_type' => 'text/html',
-        'data' => b64_html
-    }
-    if new_expression[loldfs;]
-      doc['_attachments']['toc.xml'] = {
-          'content_type' => 'text/xml',
-          'data' => b64_toc
-      }
-    end
-
-    @bytesize += get_byte_size(new_expression)
-    @bulk << new_work
   end
 
 
