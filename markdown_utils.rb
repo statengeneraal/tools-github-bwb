@@ -1,7 +1,7 @@
 require 'nokogiri'
 module MarkdownUtils
-  XSLT_METALEX = Nokogiri::XSLT(File.open('../../xslt/metalex_to_bwb.xslt'))
-  XSLT_MARKDOWN = Nokogiri::XSLT(File.open('../../xslt/xml_to_markdown.xslt'))
+  XSLT_METALEX = Nokogiri::XSLT(File.open('xslt/metalex_to_bwb.xslt'))
+  XSLT_MARKDOWN = Nokogiri::XSLT(File.open('xslt/xml_to_markdown.xslt'))
 
   # Deletes a markdown/txt file and its empty parent folders
   def delete_file(entry, md_folder)
