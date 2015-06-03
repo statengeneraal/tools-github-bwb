@@ -3,10 +3,10 @@ require 'set'
 require 'zip'
 require 'fileutils'
 require_relative 'git_utils'
-require_relative '../couch/couch'
-require_relative '../couch/wetten/cloudant_wetten'
+require_relative 'couch/couch'
+require_relative 'couch/wetten/cloudant_wetten'
 require_relative 'markdown_utils'
-require_relative '../couch/wetten/json_constants'
+require_relative 'couch/wetten/json_constants'
 include GitUtils
 include MarkdownUtils
 

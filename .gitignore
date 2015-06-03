@@ -1,3 +1,5 @@
 md/
 cache/
 .idea/
+Gemfile.lock
+secret.rb
