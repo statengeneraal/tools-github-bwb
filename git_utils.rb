@@ -24,6 +24,7 @@ PATH='path'
 # TODO tear some stuff apart
 module GitUtils
   MARKDOWN_FOLDER = 'md'
+  MARKDOWN_GIT_FOLDER = "#{MARKDOWN_FOLDER}/.git"
   XML_FOLDER = 'xml'
   BWB_JSON='bwb_list.json'
   INDEX_PATH = "#{MARKDOWN_FOLDER}/index.json"
@@ -245,14 +246,16 @@ module GitUtils
 
     Dir.chdir('..')
   end
+
   def pull_markdown_repo
     Dir.chdir(MARKDOWN_FOLDER)
-    system('git pull')
+    system("git pull #{ENV['HTTPS_REPO']} master")
     Dir.chdir('..')
   end
+
   def push_markdown_repo
     Dir.chdir(MARKDOWN_FOLDER)
-    system('git push')
+    system("git push #{ENV['HTTPS_REPO']} master")
     Dir.chdir('..')
   end
 end

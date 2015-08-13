@@ -16,6 +16,11 @@ include GitUtils
 # Object used for creating and handling git events
 event_builder = GitEventBuilder.new
 
+
+unless File.exist? MARKDOWN_GIT_FOLDER
+  system("git clone #{ENV['HTTPS_REPO']} md/")
+end
+
 if File.exist? INDEX_PATH
   # Read previous index; work from there
   json_str = File.read(INDEX_PATH)
