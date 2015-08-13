@@ -1,20 +1,20 @@
-require_relative '../couch'
+require 'couch'
 require_relative 'json_constants'
-require_relative '../secret'
 
 include JSON
-include Secret
 
 class CloudantWetten < Couch::Server
   attr_accessor :cache
   attr_accessor :bytesize
 
+  WETTEN_NAME = 'wetten'
+
   def initialize
     super(
-        "#{WETTEN_NAME}.cloudant.com", '80',
+        ENV['COUCH_URL_WETTEN'],
         {
-            name: WETTEN_NAME,
-            password: WETTEN_PASSWORD
+            name: ENV['COUCH_USER_WETTEN']||ENV['COUCH_NAME_WETTEN'],
+            password: ENV['COUCH_PASSWORD_WETTEN']
         }
     )
     @cache=[]

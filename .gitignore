@@ -3,3 +3,6 @@ cache/
 .idea/
 Gemfile.lock
 secret.rb
+README_SECRET.md
+git_update.log
+.ssh/
